@@ -404,13 +404,11 @@ async function doSetVersions() {
         });
 
         if (module.name === 'ib_flutter_app_banca') {
-            /*
-            Non è più necessario copiare gli asset nel bridge
             if (operatingSystem === 'mac') {
                 await exec(`cp -Rf ${process.cwd()}/assets/* ${process.cwd()}/bridge/assets`)
             } else {
                 await exec(`xcopy /s/Y "${process.cwd()}/assets" "${process.cwd()}/bridge/assets"`)
-            }*/
+            }
 
 
             let bridgeBuffer = fs.readFileSync(`${process.cwd()}/bridge/pubspec.yaml`);
