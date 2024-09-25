@@ -1,8 +1,8 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const mvpBranch = 'feature/247572_219968_219966';
-export const stream2ABranch = 'feature/236347_236339_236340';
+export const mvpBranch = 'feature/247786_219968_219966';
+export const stream2ABranch = 'feature/247787_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
 
 export const carteBranches = [
