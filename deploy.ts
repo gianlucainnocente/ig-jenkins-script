@@ -18,18 +18,9 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import {
-    carteBranches,
-    fondiBranches,
-    modules,
-    mvpBranch,
-    stream2ABranch,
-    stream3ABranch,
-    tradingBranches
-} from "./branches";
+import {deloitteModules, modules} from "./branches";
+
 const exec = util.promisify(require('child_process').exec);
-
-
 
 
 let appBancaVersion = '';
@@ -93,7 +84,7 @@ async function deploy() {
 
     if (mode !== 'jenkins') {
         let response = await prompt.get({
-            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Deploy completo con test\n3 - Deploy completo con test + generazione mocks\n4 - Solo test\n5 - Solo generazione\n6 - Creazione e approvazione merge request\n7 - Approva merge requests\n8 - Completo sperimentale'
+            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Deploy completo con test\n3 - Deploy completo con test + generazione mocks\n4 - Solo test\n5 - Solo generazione\n6 - Creazione e approvazione merge request\n7 - Approva merge requests'
         });
 
         if (response.question == '1') {
@@ -129,144 +120,172 @@ async function deploy() {
             executeGenerate = false;
             executeTests = false;
             fixFormatEachBranch = true;
+        } else if (response.question == '9') {
+            mode = 'branch';
+            executeGenerate = false;
+            executeTests = false;
+        }
+
+        if (mode == 'full') {
+            try {
+                fs.unlinkSync(runnngJobsPath);
+                fs.unlinkSync(commitsPath);
+                fs.unlinkSync(mergeRequestsPath);
+            } catch (e) {
+                //console.log('No previous data: ', e);
+            }
+
+            runningJobs = [];
+            mergeRequests = {};
+            commits = {};
+
+            await doMergeAndPush(fixFormatEachBranch);
+
+            await prompt.get({
+                description: 'Merge e push completati. Premi un tasto per proseguire con il setup dei puntamenti locali (potrebbe volerci del tempo)'
+            });
+
+            if (operatingSystem === 'mac') {
+                await exec('rps setup local')
+            } else {
+                await exec('cd .. && python ./ib_flutter_app_banca/tool/init.py localDep && python ./ib_flutter_app_banca/tool/init.py getAll && cd ./ib_flutter_app_banca')
+            }
+
+            await prompt.get({
+                description: 'Puntamenti locali impostati. Premi un tasto per proseguire con il format e apply fix.'
+            });
+
+            await doFormatAndFix();
+
+            if (executeGenerate) {
+                await doRunGenerate();
+            }
+
+            if (executeTests) {
+                await doFlutterTests();
+            }
+
+            await prompt.get({
+                description: 'Effettua tutte le fix di analyze rimanenti SENZA committare o pushare. Quando hai terminato, premi un tasto per continuare'
+            })
+
+            await doResetRemoteDependencies();
+
+            await prompt.get({
+                description: 'Puntamenti remoti ripristinati. Premi un tasto per continuare'
+            })
+
+            await doPushAnalyzeFixes();
+
+            await prompt.get({
+                description: 'Push dei fix terminato. Quando hai terminato, premi un tasto per continuare'
+            })
+
+            await doSetVersions();
+
+            await prompt.get({
+                description: 'Versioni impostate. Quando hai terminato, premi un tasto per continuare'
+            });
+
+            commits = await doPushVersions();
+
+            fs.writeFile(commitsPath, JSON.stringify(commits), 'utf8', function (err) {
+                if (err) return console.log(err);
+            });
+
+            await prompt.get({
+                description: 'Push completato. Premi un tasto per procedere con le merge request'
+            });
+
+            mergeRequests = await doMergeRequests();
+
+            fs.writeFile(mergeRequestsPath, JSON.stringify(mergeRequests), 'utf8', function (err) {
+                if (err) return console.log(err);
+            });
+
+            await prompt.get({
+                description: 'Merge request create. Premi un tasto per procedere con le build'
+            });
+
+            await approveMergeRequests(commits, mergeRequests, 1);
+        } else if (mode == 'jenkins') {
+            let inProgressJobs = JSON.parse(JSON.stringify(runningJobs)).filter((job: any) => job.status === 'IN_PROGRESS');
+
+            if (inProgressJobs.length > 0) {
+                let parallelGroup = inProgressJobs[0].parallelGroup;
+                console.log(`deploy - riprendi lavoro precedente - parallelGroup: ${parallelGroup}`);
+                await doManageDeploys(commits, mergeRequests, parallelGroup);
+            } else {
+                let lastParallelGroup = runningJobs.reduce((max: number, job: any) => job.parallelGroup > max ? job.parallelGroup : max, 0);
+                console.log(`deploy - riprendi lavoro precedente - lastParallelGroup: ${lastParallelGroup}`);
+                await doManageDeploys(commits, mergeRequests, lastParallelGroup);
+            }
+        } else if (mode == 'test') {
+            if (operatingSystem === 'mac') {
+                await exec('rps setup local')
+            } else {
+                await exec('cd .. && python ./ib_flutter_app_banca/tool/init.py localDep && python ./ib_flutter_app_banca/tool/init.py getAll && cd ./ib_flutter_app_banca')
+            }
+            await doFlutterTests();
+            await doResetRemoteDependencies();
+        } else if (mode == 'generate') {
+            if (operatingSystem === 'mac') {
+                await exec('rps setup local')
+            } else {
+                await exec('cd .. && python ./ib_flutter_app_banca/tool/init.py localDep && python ./ib_flutter_app_banca/tool/init.py getAll && cd ./ib_flutter_app_banca')
+            }
+            await doRunGenerate();
+            await doResetRemoteDependencies();
+        } else if (mode == 'createAndApproveMergeRequests') {
+            mergeRequests = await doMergeRequests();
+
+            fs.writeFile(mergeRequestsPath, JSON.stringify(mergeRequests), 'utf8', function (err) {
+                if (err) return console.log(err);
+            });
+
+            await prompt.get({
+                description: 'Merge request create. Premi un tasto per procedere con le build'
+            });
+
+            await approveMergeRequests(commits, mergeRequests, 1);
+        } else if (mode == 'approveMergeRequests') {
+            try {
+                let jsonCommits = fs.readFileSync(commitsPath);
+                let jsonMergeRequests = fs.readFileSync(mergeRequestsPath);
+                if (jsonCommits && jsonMergeRequests) {
+                    commits = JSON.parse(jsonCommits.toString());
+                    mergeRequests = JSON.parse(jsonMergeRequests.toString());
+
+                    await approveMergeRequests(commits, mergeRequests, 1);
+                }
+            } catch (e) {
+                console.log('No previous data: ', e);
+            }
+        } else if (mode == 'branch') {
+            await createBranches();
         }
     }
+}
 
-    if (mode == 'full') {
-        try {
-            fs.unlinkSync(runnngJobsPath);
-            fs.unlinkSync(commitsPath);
-            fs.unlinkSync(mergeRequestsPath);
-        } catch (e) {
-            //console.log('No previous data: ', e);
+async function createBranches() {
+    for (let moduleName of deloitteModules) {
+        console.log(`createBranches ${moduleName}`);
+        let module = modules.find(m => m.name === moduleName);
+
+        if (!module) {
+            console.log(`createBranches ${moduleName} - module not found. Exiting`);
+            process.exit();
         }
 
-        runningJobs = [];
-        mergeRequests = {};
-        commits = {};
+        let newBranch = 'feature/248535_236339_236340';
+        let sourceBranch = 'feature/247787_236339_236340';
+        let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
+        let body = {};
 
-        await doMergeAndPush(fixFormatEachBranch);
+        let result: any = await httpRequest(url, 'POST', body);
 
-        await prompt.get({
-            description: 'Merge e push completati. Premi un tasto per proseguire con il setup dei puntamenti locali (potrebbe volerci del tempo)'
-        });
-
-        if (operatingSystem === 'mac') {
-            await exec('rps setup local')
-        } else {
-            await exec('cd .. && python ./ib_flutter_app_banca/tool/init.py localDep && python ./ib_flutter_app_banca/tool/init.py getAll && cd ./ib_flutter_app_banca')
-        }
-
-        await prompt.get({
-            description: 'Puntamenti locali impostati. Premi un tasto per proseguire con il format e apply fix.'
-        });
-
-        await doFormatAndFix();
-
-        if (executeGenerate) {
-            await doRunGenerate();
-        }
-
-        if (executeTests) {
-            await doFlutterTests();
-        }
-
-        await prompt.get({
-            description: 'Effettua tutte le fix di analyze rimanenti SENZA committare o pushare. Quando hai terminato, premi un tasto per continuare'
-        })
-
-        await doResetRemoteDependencies();
-
-        await prompt.get({
-            description: 'Puntamenti remoti ripristinati. Premi un tasto per continuare'
-        })
-
-        await doPushAnalyzeFixes();
-
-        await prompt.get({
-            description: 'Push dei fix terminato. Quando hai terminato, premi un tasto per continuare'
-        })
-
-        await doSetVersions();
-
-        await prompt.get({
-            description: 'Versioni impostate. Quando hai terminato, premi un tasto per continuare'
-        });
-
-        commits = await doPushVersions();
-
-        fs.writeFile(commitsPath, JSON.stringify(commits), 'utf8', function (err) {
-            if (err) return console.log(err);
-        });
-
-        await prompt.get({
-            description: 'Push completato. Premi un tasto per procedere con le merge request'
-        });
-
-        mergeRequests = await doMergeRequests();
-
-        fs.writeFile(mergeRequestsPath, JSON.stringify(mergeRequests), 'utf8', function (err) {
-            if (err) return console.log(err);
-        });
-
-        await prompt.get({
-            description: 'Merge request create. Premi un tasto per procedere con le build'
-        });
-
-        await approveMergeRequests(commits, mergeRequests, 1);
-    } else if (mode == 'jenkins') {
-        let inProgressJobs = JSON.parse(JSON.stringify(runningJobs)).filter((job: any) => job.status === 'IN_PROGRESS');
-
-        if (inProgressJobs.length > 0) {
-            let parallelGroup = inProgressJobs[0].parallelGroup;
-            console.log(`deploy - riprendi lavoro precedente - parallelGroup: ${parallelGroup}`);
-            await doManageDeploys(commits, mergeRequests, parallelGroup);
-        } else {
-            let lastParallelGroup = runningJobs.reduce((max: number, job: any) => job.parallelGroup > max ? job.parallelGroup : max, 0);
-            console.log(`deploy - riprendi lavoro precedente - lastParallelGroup: ${lastParallelGroup}`);
-            await doManageDeploys(commits, mergeRequests, lastParallelGroup);
-        }
-    } else if (mode == 'test') {
-        if (operatingSystem === 'mac') {
-            await exec('rps setup local')
-        } else {
-            await exec('cd .. && python ./ib_flutter_app_banca/tool/init.py localDep && python ./ib_flutter_app_banca/tool/init.py getAll && cd ./ib_flutter_app_banca')
-        }
-        await doFlutterTests();
-        await doResetRemoteDependencies();
-    } else if (mode == 'generate') {
-        if (operatingSystem === 'mac') {
-            await exec('rps setup local')
-        } else {
-            await exec('cd .. && python ./ib_flutter_app_banca/tool/init.py localDep && python ./ib_flutter_app_banca/tool/init.py getAll && cd ./ib_flutter_app_banca')
-        }
-        await doRunGenerate();
-        await doResetRemoteDependencies();
-    } else if (mode == 'createAndApproveMergeRequests') {
-        mergeRequests = await doMergeRequests();
-
-        fs.writeFile(mergeRequestsPath, JSON.stringify(mergeRequests), 'utf8', function (err) {
-            if (err) return console.log(err);
-        });
-
-        await prompt.get({
-            description: 'Merge request create. Premi un tasto per procedere con le build'
-        });
-
-        await approveMergeRequests(commits, mergeRequests, 1);
-    } else if (mode == 'approveMergeRequests') {
-        try {
-            let jsonCommits = fs.readFileSync(commitsPath);
-            let jsonMergeRequests = fs.readFileSync(mergeRequestsPath);
-            if (jsonCommits && jsonMergeRequests) {
-                commits = JSON.parse(jsonCommits.toString());
-                mergeRequests = JSON.parse(jsonMergeRequests.toString());
-
-                await approveMergeRequests(commits, mergeRequests, 1);
-            }
-        } catch (e) {
-            console.log('No previous data: ', e);
-        }
+        let jsonResult = JSON.parse(result.toString());
+        console.log(`createBranches ${moduleName} - branch created: ${JSON.stringify(jsonResult)}`);
     }
 }
 
@@ -587,7 +606,7 @@ async function doManageDeploys(commits: any, mergeRequests: any, parallelGroup: 
                 console.log(`doManageDeploys ${module} - build is COMPLETED`);
                 runningJobs.find(jb => jb.module == module).status = 'COMPLETED';
                 runningJobs.find(jb => jb.module == module).endedAt = new Date().toISOString();
-            } else {
+            } else if (moduleJenkinsStatus.result !== 'ABORTED') {
                 console.log(`doManageDeploys ${module} - build is FAILED`);
                 runningJobs.find(jb => jb.module == module).status = 'FAILED';
                 runningJobs.find(jb => jb.module == module).endedAt = new Date().toISOString();
@@ -607,7 +626,7 @@ async function doManageDeploys(commits: any, mergeRequests: any, parallelGroup: 
 
     console.log(`doManageDeploys - pendingJobsSameGroup: ${pendingJobsSameGroup.length} - failedJobsSameGroup: ${failedJobsSameGroup.length} - completedJobsSameGroup: ${completedJobsSameGroup.length} - modulesInGroup: ${modulesInGroup.length}`)
 
-    if (pendingJobsSameGroup.length === 0 && failedJobsSameGroup.length === 0 && completedJobsSameGroup.length === modulesInGroup.length ) {
+    if (pendingJobsSameGroup.length === 0 && failedJobsSameGroup.length === 0 && completedJobsSameGroup.length === modulesInGroup.length) {
         console.log(`doManageDeploys - all jobs in parallelGroup ${parallelGroup} are completed`);
 
         setTimeout(async () => {
@@ -635,14 +654,31 @@ async function getModuleJenkinsStatus(commit: string, module: string, mergeReque
     console.log(`${module} - getModuleJenkinsStatus - jenkinsJob: ${jenkinsJob} - commit: ${commit}`);
 
     if (!jenkinsBuildNumbers[module]) {
+        if (!mergeRequests[module].merge_commit_sha) {
+            console.log(`${module} - getModuleJenkinsStatus - mergeRequests[module].merge_commit_sha not found. Finding it.`);
+            mergeRequests[module].merge_commit_sha = await getMergeRequestCommitSha(module, mergeRequests[module].iid);
+            fs.writeFile(mergeRequestsPath, JSON.stringify(mergeRequests), 'utf8', function (err) {
+                if (err) return console.log(err);
+            });
+        }
+
         jenkinsBuildNumbers[module] = await getJenkinsBuildNumber(mergeRequests[module].merge_commit_sha, module);
     }
 
+    console.log(`${module} - getModuleJenkinsStatus - jenkinsJob: ${jenkinsJob} - jenkinsBuildNumbers[module]: ${jenkinsBuildNumbers[module]}`);
     const buildInfo = await jenkins.build.get(jenkinsJob, jenkinsBuildNumbers[module]);
 
     console.log(`${module} - getModuleJenkinsStatus - buildInfo description: ${buildInfo.description} - building: ${buildInfo.building} - result: ${buildInfo.result}`);
 
     return buildInfo;
+}
+
+async function getMergeRequestCommitSha(module: string, mergeRequestId: number) {
+    let url = `https://git.gbm.lan/api/v4/projects/${modules.find(m => m.name === module)?.gitlabProjectId}/merge_requests/${mergeRequestId}?private_token=${gitlabToken}`;
+    let result: any = await httpRequest(url, 'GET', {});
+
+    let jsonResult = JSON.parse(result.toString());
+    return jsonResult.sha;
 }
 
 async function getJenkinsBuildNumber(commit: string, module: string) {
@@ -732,6 +768,7 @@ function sleep(ms: number) {
 }
 
 deploy();
+
 //test();
 
 async function test() {

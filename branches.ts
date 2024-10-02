@@ -1,9 +1,25 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const mvpBranch = 'feature/247786_219968_219966';
-export const stream2ABranch = 'feature/247787_236339_236340';
+export const mvpBranch = 'feature/248534_219968_219966';
+export const stream2ABranch = 'feature/248535_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
+
+export const deloitteModules = [
+    'cross_flutter_libarch_uicomponents',
+    'cross_flutter_libarch_shared',
+    'ib_flutter_lib_a11y_utils',
+    'ib_flutter_feature_keyhole',
+    'ib_flutter_feature_bollettini',
+    'ib_flutter_feature_login',
+    'ib_flutter_feature_bonifici',
+    'ib_flutter_feature_tributi',
+    'ib_flutter_feature_conti',
+    'ib_flutter_feature_ricariche',
+    'ib_flutter_feature_prelievieversamenti',
+    'ib_flutter_feature_homepage',
+    'ib_flutter_app_banca'
+]
 
 export const carteBranches = [
     'feature/239865_239866_239867',
