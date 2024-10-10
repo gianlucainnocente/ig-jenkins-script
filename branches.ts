@@ -1,8 +1,8 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const mvpBranch = 'feature/248921_219968_219966';
-export const stream2ABranch = 'feature/248922_236339_236340';
+export const mvpBranch = 'feature/249294_219968_219966';
+export const stream2ABranch = 'feature/249296_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
 
 export const deloitteModules = [
