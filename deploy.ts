@@ -208,18 +208,6 @@ async function deploy() {
             });
 
             await approveMergeRequests(commits, mergeRequests, 1);
-        } else if (mode == 'jenkins') {
-            let inProgressJobs = JSON.parse(JSON.stringify(runningJobs)).filter((job: any) => job.status === 'IN_PROGRESS');
-
-            if (inProgressJobs.length > 0) {
-                let parallelGroup = inProgressJobs[0].parallelGroup;
-                console.log(`deploy - riprendi lavoro precedente - parallelGroup: ${parallelGroup}`);
-                await doManageDeploys(commits, mergeRequests, parallelGroup);
-            } else {
-                let lastParallelGroup = runningJobs.reduce((max: number, job: any) => job.parallelGroup > max ? job.parallelGroup : max, 0);
-                console.log(`deploy - riprendi lavoro precedente - lastParallelGroup: ${lastParallelGroup}`);
-                await doManageDeploys(commits, mergeRequests, lastParallelGroup);
-            }
         } else if (mode == 'test') {
             if (operatingSystem === 'mac') {
                 await exec('rps setup local')
@@ -264,6 +252,18 @@ async function deploy() {
         } else if (mode == 'branch') {
             await createBranches();
         }
+    } else if (mode == 'jenkins') {
+        let inProgressJobs = JSON.parse(JSON.stringify(runningJobs)).filter((job: any) => job.status === 'IN_PROGRESS');
+
+        if (inProgressJobs.length > 0) {
+            let parallelGroup = inProgressJobs[0].parallelGroup;
+            console.log(`deploy - riprendi lavoro precedente - parallelGroup: ${parallelGroup}`);
+            await doManageDeploys(commits, mergeRequests, parallelGroup);
+        } else {
+            let lastParallelGroup = runningJobs.reduce((max: number, job: any) => job.parallelGroup > max ? job.parallelGroup : max, 0);
+            console.log(`deploy - riprendi lavoro precedente - lastParallelGroup: ${lastParallelGroup}`);
+            await doManageDeploys(commits, mergeRequests, lastParallelGroup);
+        }
     }
 }
 
@@ -277,8 +277,8 @@ async function createBranches() {
             process.exit();
         }
 
-        let newBranch = 'feature/248535_236339_236340';
-        let sourceBranch = 'feature/247787_236339_236340';
+        let newBranch = 'feature/248922_236339_236340';
+        let sourceBranch = 'feature/248535_236339_236340';
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
         let body = {};
 
