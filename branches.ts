@@ -27,7 +27,7 @@ export const carteBranches = [
 ];
 
 export const tradingBranches = [
-    'feature/233673_233675_233674'
+    'feature/249298_233675_233674'
 ];
 
 export const fondiBranches = [
