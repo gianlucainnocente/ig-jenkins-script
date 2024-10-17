@@ -277,8 +277,8 @@ async function createBranches() {
             process.exit();
         }
 
-        let newBranch = 'feature/248922_236339_236340';
-        let sourceBranch = 'feature/248535_236339_236340';
+        let newBranch = 'feature/249649_236339_236340';
+        let sourceBranch = 'feature/249296_236339_236340';
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
         let body = {};
 
@@ -352,18 +352,18 @@ async function doFormatAndFix() {
 }
 
 async function doRunGenerate() {
-    for (let module of modules) {
-        process.chdir('../' + module.name);
-        console.log(`doRunGenerate ${module.name} - move to folder ${process.cwd()}`);
+    for (let module of deloitteModules) {
+        process.chdir('../' + module);
+        console.log(`doRunGenerate ${module} - move to folder ${process.cwd()}`);
 
         await exec('flutter pub run build_runner build --delete-conflicting-outputs')
     }
 }
 
 async function doFlutterTests() {
-    for (let module of modules) {
-        process.chdir('../' + module.name);
-        console.log(`doFlutterTests ${module.name} - move to folder ${process.cwd()}`);
+    for (let module of deloitteModules) {
+        process.chdir('../' + module);
+        console.log(`doFlutterTests ${module} - move to folder ${process.cwd()}`);
 
         await exec('flutter test')
     }
