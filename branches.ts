@@ -1,13 +1,11 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const mvpBranch = 'feature/249646_219968_219966';
-export const stream2ABranch = 'feature/249649_236339_236340';
+export const mvpBranch = 'feature/250680_219968_219966';
+export const stream2ABranch = 'feature/250681_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
 
 export const deloitteModules = [
-    'cross_flutter_libarch_uicomponents',
-    'cross_flutter_libarch_shared',
     'ib_flutter_lib_a11y_utils',
     'ib_flutter_feature_keyhole',
     'ib_flutter_feature_bollettini',
@@ -36,30 +34,6 @@ export const fondiBranches = [
 ];
 
 export const modules = [
-    {
-        "name": "cross_flutter_libarch_uicomponents",
-        "namespace": "architettura",
-        "branches": [
-            mvpBranch,
-            stream2ABranch,
-            stream3ABranch,
-        ],
-        "parallelGroup": 1,
-        "gitlabProjectId": "17003",
-        "jenkinsJob": "flutter_lib"
-    },
-    {
-        "name": "cross_flutter_libarch_shared",
-        "namespace": "architettura",
-        "branches": [
-            mvpBranch,
-            stream2ABranch,
-            stream3ABranch,
-        ],
-        "parallelGroup": 1,
-        "gitlabProjectId": "16894",
-        "jenkinsJob": "flutter_lib"
-    },
     {
         "name": "ib_flutter_lib_a11y_utils",
         "namespace": "nib",

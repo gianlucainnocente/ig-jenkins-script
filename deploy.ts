@@ -37,7 +37,7 @@ simpleGit().env({
 });
 const git: SimpleGit = simpleGit('./')
 const jenkins = new Jenkins({
-    baseUrl: `http://${jenkinsUsername}:${jenkinsToken}@ci.devops.gbm.lan:8080`,
+    baseUrl: `http://${jenkinsUsername}:${jenkinsToken}@continuous-integration.devops.gbm.lan`,
 });
 
 prompt.start();
@@ -277,8 +277,14 @@ async function createBranches() {
             process.exit();
         }
 
-        let newBranch = 'feature/249649_236339_236340';
-        let sourceBranch = 'feature/249296_236339_236340';
+
+        //let newBranch = 'feature/250680_219968_219966';
+        //let sourceBranch = 'feature/249646_219968_219966';
+
+        let newBranch = 'feature/250681_236339_236340';
+        let sourceBranch = 'feature/249649_236339_236340';
+
+
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
         let body = {};
 
@@ -345,6 +351,8 @@ async function doFormatAndFix() {
     for (let module of modules) {
         process.chdir('../' + module.name);
         console.log(`doFormatAndFix ${module.name} - move to folder ${process.cwd()}`);
+
+        await exec('rm -rf test/test_mocks.mocks.dart')
 
         await exec('dart format -l 120 .')
         await exec('dart fix --apply')
