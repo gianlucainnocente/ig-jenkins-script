@@ -552,7 +552,7 @@ async function approveMergeRequests(commits: any, mergeRequests: any, parallelGr
 
     await sleep(3000);
 
-    let modulesToApprove = modules.filter(module => module.parallelGroup === parallelGroup);
+    let modulesToApprove = modules.filter(module => module.parallelGroup === parallelGroup && module.autoapprove);
 
     if (modulesToApprove.length === 0) {
         console.log(`approveMergeRequests - no modules to approve. Exiting`);

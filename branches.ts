@@ -35,6 +35,32 @@ export const fondiBranches = [
 
 export const modules = [
     {
+        "name": "cross_flutter_libarch_uicomponents",
+        "namespace": "architettura",
+        "branches": [
+            mvpBranch,
+            stream2ABranch,
+            stream3ABranch,
+        ],
+        "parallelGroup": 0,
+        "gitlabProjectId": "17003",
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": false
+    },
+    {
+        "name": "cross_flutter_libarch_shared",
+        "namespace": "architettura",
+        "branches": [
+            mvpBranch,
+            stream2ABranch,
+            stream3ABranch,
+        ],
+        "parallelGroup": 0,
+        "gitlabProjectId": "16894",
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": false
+    },
+    {
         "name": "ib_flutter_lib_a11y_utils",
         "namespace": "nib",
         "branches": [
@@ -42,9 +68,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch,
         ],
-        "parallelGroup": 2,
+        "parallelGroup": 1,
         "gitlabProjectId": "16898",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_keyhole",
@@ -54,9 +81,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch,
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "18637",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_bollettini",
@@ -66,9 +94,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch,
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "16937",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_login",
@@ -78,9 +107,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch,
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "16902",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_bonifici",
@@ -90,9 +120,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "17021",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_tributi",
@@ -102,9 +133,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "16933",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_conti",
@@ -114,25 +146,28 @@ export const modules = [
             stream2ABranch,
             stream3ABranch,
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "17017",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_carte",
         "namespace": "nib",
         "branches": carteBranches,
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "17220",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_trading",
         "namespace": "nib",
         "branches": tradingBranches,
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "17015",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_ricariche",
@@ -142,9 +177,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "17087",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_prelievieversamenti",
@@ -152,9 +188,10 @@ export const modules = [
         "branches": [
             stream3ABranch
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "18847",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_homepage",
@@ -164,9 +201,10 @@ export const modules = [
             stream2ABranch,
             stream3ABranch
         ],
-        "parallelGroup": 3,
+        "parallelGroup": 2,
         "gitlabProjectId": "16903",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_feature_fondi",
@@ -174,7 +212,8 @@ export const modules = [
         "branches": fondiBranches,
         "parallelGroup": 3,
         "gitlabProjectId": "17930",
-        "jenkinsJob": "flutter_lib"
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
     },
     {
         "name": "ib_flutter_app_banca",
@@ -184,8 +223,9 @@ export const modules = [
             stream2ABranch,
             stream3ABranch,
         ],
-        "parallelGroup": 4,
+        "parallelGroup": 3,
         "gitlabProjectId": "16896",
-        "jenkinsJob": "flutter_app"
+        "jenkinsJob": "flutter_app",
+        "autoapprove": true
     }
 ]
