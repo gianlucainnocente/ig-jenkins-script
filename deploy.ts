@@ -387,6 +387,9 @@ async function doResetRemoteDependencies() {
 }
 
 async function doSetVersions() {
+    let crossUiVersion = await retrieveLastModuleVersion('cross_flutter_libarch_uicomponents');
+    let crossSharedVersion = await retrieveLastModuleVersion('cross_flutter_libarch_shared');
+
     let newVersions: any = {};
     let currentVersions: any = {};
     for (let module of modules) {
@@ -418,6 +421,10 @@ async function doSetVersions() {
 
             newVersion = `${newPrefix}.0.${incremental}+${newPrefix}${incremental.toString().padStart(3, '0')}`;
             appBancaVersion = newVersion;
+        } else if (module.name == 'cross_flutter_libarch_uicomponents') {
+            newVersion = crossUiVersion;
+        } else if (module.name == 'cross_flutter_libarch_shared') {
+            newVersion = crossSharedVersion;
         } else {
             let numberVersion = currentVersion.replace('0.0.', '').replace('-SNAPSHOT', '');
             newVersion = `0.0.${parseInt(numberVersion) + 1}-SNAPSHOT`;
@@ -774,6 +781,32 @@ async function httpRequest(url: string, method: string, body: any) {
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+async function retrieveLastModuleVersion(module: string) {
+    const indexPage = await httpRequest('http://artifactory.gbm.lan:8080/artifactory/pub_local/' + module + '/', 'GET', {});
+    console.log(`retrieveLastModuleVersion - indexPage: ${indexPage}`);
+
+    const versionRegex = /cross_flutter_libarch_uicomponents-(\d+\.\d+\.\d+(?:-SNAPSHOT)?)\.tar\.gz/g;
+
+    const versions: string[] = [];
+    let match;
+    while ((match = versionRegex.exec(<string>indexPage)) !== null) {
+        if (match[1].startsWith('0.0.')) {
+            versions.push(match[1]);
+        }
+    }
+
+    let sortedVersions = versions.sort((a, b) => {
+        return a.localeCompare(b);
+    });
+
+    console.log(sortedVersions[sortedVersions.length - 1]);
+    return sortedVersions[sortedVersions.length - 1];
+}
+
+/*retrieveLastModuleVersion('cross_flutter_libarch_uicomponents').then(r => {
+    console.log(`retrieveLastModuleVersion - result: ${r}`);
+});*/
 
 deploy();
 
