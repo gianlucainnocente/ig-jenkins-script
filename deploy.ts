@@ -6,7 +6,7 @@ ISTRUZIONI PER L'USO
  */
 
 import Jenkins from "jenkins";
-import simpleGit, {ResetMode, SimpleGit} from "simple-git";
+import simpleGit, { ResetMode, SimpleGit } from "simple-git";
 import prompt from "prompt";
 import fs from "fs";
 import * as util from "node:util";
@@ -18,7 +18,7 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import {deloitteModules, modules} from "./branches";
+import { deloitteModules, modules } from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -351,9 +351,11 @@ async function doFormatAndFix() {
     for (let module of modules) {
         process.chdir('../' + module.name);
         console.log(`doFormatAndFix ${module.name} - move to folder ${process.cwd()}`);
-
-        await exec('rm -rf test/test_mocks.mocks.dart')
-
+        if (operatingSystem === 'mac') {
+            await exec('rm -rf test/test_mocks.mocks.dart')
+        } else {
+            await exec('del /q /f test\\test_mocks.mocks.dart')
+        }
         await exec('dart format -l 120 .')
         await exec('dart fix --apply')
     }
@@ -432,10 +434,11 @@ async function doSetVersions() {
 
         console.log(`doSetVersions ${module.name} - new version: ${newVersion}`);
         let newContent = buffer.toString().replace(`version: ${currentVersion}`, `version: ${newVersion}`);
-
-        fs.writeFile(`${process.cwd()}/pubspec.yaml`, newContent, 'utf8', function (err) {
-            if (err) return console.log(err);
-        });
+        if (module.autoapprove) {
+            fs.writeFile(`${process.cwd()}/pubspec.yaml`, newContent, 'utf8', function (err) {
+                if (err) return console.log(err);
+            });
+        }
 
         if (module.name === 'ib_flutter_app_banca') {
             if (operatingSystem === 'mac') {
@@ -785,8 +788,10 @@ function sleep(ms: number) {
 async function retrieveLastModuleVersion(module: string) {
     const indexPage = await httpRequest('http://artifactory.gbm.lan:8080/artifactory/pub_local/' + module + '/', 'GET', {});
     console.log(`retrieveLastModuleVersion - indexPage: ${indexPage}`);
-
-    const versionRegex = /cross_flutter_libarch_uicomponents-(\d+\.\d+\.\d+(?:-SNAPSHOT)?)\.tar\.gz/g;
+    let versionRegex = /cross_flutter_libarch_uicomponents-(\d+\.\d+\.\d+(?:-SNAPSHOT)?)\.tar\.gz/g;
+    if (module === "cross_flutter_libarch_shared") {
+        versionRegex = /cross_flutter_libarch_shared-(\d+\.\d+\.\d+(?:-SNAPSHOT)?)\.tar\.gz/g;
+    }
 
     const versions: string[] = [];
     let match;
@@ -797,7 +802,9 @@ async function retrieveLastModuleVersion(module: string) {
     }
 
     let sortedVersions = versions.sort((a, b) => {
-        return a.localeCompare(b);
+        let aParsed = parseInt(a.replace("0.0.", ""));
+        let bParsed = parseInt(b.replace("0.0.", ""));
+        return aParsed - bParsed;
     });
 
     console.log(sortedVersions[sortedVersions.length - 1]);
