@@ -29,8 +29,7 @@ export const tradingBranches = [
 ];
 
 export const fondiBranches = [
-    'feature/238318_238316_238315',
-    'feature/239860_239858_239859',
+    'feature/239861_239862_239863'
 ];
 
 export const modules = [
