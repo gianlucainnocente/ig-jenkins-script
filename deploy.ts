@@ -18,7 +18,7 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import {deloitteModules, modules, stream2ABranch} from "./branches";
+import {deloitteModules, modules, productionModules, stream2ABranch} from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -256,22 +256,23 @@ async function deploy() {
         } else if (mode == 'branch') {
             await createBranches();
         } else if (mode == 'masterToStream2') {
-            for (let module of modules) {
-                process.chdir('../' + module.name);
-                console.log(`doMergeAndPush ${module.name} - move to folder ${process.cwd()}`);
+            for (let module of productionModules) {
+                process.chdir('../' + module);
+                console.log(`doMergeAndPush ${module} - move to folder ${process.cwd()}`);
 
                 let remotes = await git.getRemotes();
-                console.log(`doMergeAndPush ${module.name} - remotes: ${JSON.stringify(remotes)}`);
+                console.log(`doMergeAndPush ${module} - remotes: ${JSON.stringify(remotes)}`);
 
                 await git.reset(ResetMode.HARD);
                 await git.checkout('master');
 
-                console.log(`doMergeAndPush ${module.name} - checkout on branch master`);
+                console.log(`doMergeAndPush ${module} - checkout on branch master`);
 
                 await git.pull(remotes[0].name, 'master')
 
                 await git.reset(ResetMode.HARD);
                 await git.checkout(stream2ABranch);
+                await git.pull(remotes[0].name, stream2ABranch)
 
                 let mergeOK = false;
 
@@ -279,14 +280,14 @@ async function deploy() {
                     try {
                         let mergeResult = await git.mergeFromTo('master', stream2ABranch);
                         if (mergeResult.failed) {
-                            console.log(`doMergeAndPush ${module.name} - merge failed. Exiting`);
+                            console.log(`doMergeAndPush ${module} - merge failed. Exiting`);
                             process.exit();
                         }
 
-                        console.log(`doMergeAndPush ${module.name} - merge master into ${stream2ABranch}. SUCCESS`);
+                        console.log(`doMergeAndPush ${module} - merge master into ${stream2ABranch}. SUCCESS`);
                         mergeOK = true;
                     } catch (e) {
-                        console.log(`doMergeAndPush ${module.name} - merge master into ${stream2ABranch}. Error: ${e}`);
+                        console.log(`doMergeAndPush ${module} - merge master into ${stream2ABranch}. Error: ${e}`);
 
                         await prompt.get({
                             description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
