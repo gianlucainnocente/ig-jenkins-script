@@ -260,15 +260,20 @@ async function deploy() {
                 process.chdir('../' + module);
                 console.log(`doMergeAndPush ${module} - move to folder ${process.cwd()}`);
 
+                let targetBranch = 'master';
+                if (module === 'ib_flutter_app_banca') {
+                    targetBranch = 'preproduzione_produzione';
+                }
+
                 let remotes = await git.getRemotes();
                 console.log(`doMergeAndPush ${module} - remotes: ${JSON.stringify(remotes)}`);
 
                 await git.reset(ResetMode.HARD);
-                await git.checkout('master');
+                await git.checkout(targetBranch);
 
                 console.log(`doMergeAndPush ${module} - checkout on branch master`);
 
-                await git.pull(remotes[0].name, 'master')
+                await git.pull(remotes[0].name, targetBranch)
 
                 await git.reset(ResetMode.HARD);
                 await git.checkout(stream2ABranch);
@@ -278,16 +283,16 @@ async function deploy() {
 
                 do {
                     try {
-                        let mergeResult = await git.mergeFromTo('master', stream2ABranch);
+                        let mergeResult = await git.mergeFromTo(targetBranch, stream2ABranch);
                         if (mergeResult.failed) {
                             console.log(`doMergeAndPush ${module} - merge failed. Exiting`);
                             process.exit();
                         }
 
-                        console.log(`doMergeAndPush ${module} - merge master into ${stream2ABranch}. SUCCESS`);
+                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream2ABranch}. SUCCESS`);
                         mergeOK = true;
                     } catch (e) {
-                        console.log(`doMergeAndPush ${module} - merge master into ${stream2ABranch}. Error: ${e}`);
+                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream2ABranch}. Error: ${e}`);
 
                         await prompt.get({
                             description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
