@@ -18,7 +18,7 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import { deloitteModules, modules } from "./branches";
+import {deloitteModules, modules, stream2ABranch} from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -84,7 +84,7 @@ async function deploy() {
 
     if (mode !== 'jenkins') {
         let response = await prompt.get({
-            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Deploy completo con test\n3 - Deploy completo con test + generazione mocks\n4 - Solo test\n5 - Solo generazione\n6 - Creazione e approvazione merge request\n7 - Approva merge requests'
+            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Merge master su stream 2'
         });
 
         if (response.question == '1') {
@@ -92,6 +92,10 @@ async function deploy() {
             executeGenerate = false;
             executeTests = false;
         } else if (response.question == '2') {
+            mode = 'masterToStream2';
+            executeGenerate = false;
+            executeTests = false;
+        }/* else if (response.question == '2') {
             mode = 'full';
             executeGenerate = false;
             executeTests = true;
@@ -120,7 +124,7 @@ async function deploy() {
             executeGenerate = false;
             executeTests = false;
             fixFormatEachBranch = true;
-        } else if (response.question == '9') {
+        }*/ else if (response.question == '9') {
             mode = 'branch';
             executeGenerate = false;
             executeTests = false;
@@ -251,6 +255,50 @@ async function deploy() {
             }
         } else if (mode == 'branch') {
             await createBranches();
+        } else if (mode == 'masterToStream2') {
+            for (let module of modules) {
+                process.chdir('../' + module.name);
+                console.log(`doMergeAndPush ${module.name} - move to folder ${process.cwd()}`);
+
+                let remotes = await git.getRemotes();
+                console.log(`doMergeAndPush ${module.name} - remotes: ${JSON.stringify(remotes)}`);
+
+                await git.reset(ResetMode.HARD);
+                await git.checkout('master');
+
+                console.log(`doMergeAndPush ${module.name} - checkout on branch master`);
+
+                await git.pull(remotes[0].name, 'master')
+
+                await git.reset(ResetMode.HARD);
+                await git.checkout(stream2ABranch);
+
+                let mergeOK = false;
+
+                do {
+                    try {
+                        let mergeResult = await git.mergeFromTo('master', stream2ABranch);
+                        if (mergeResult.failed) {
+                            console.log(`doMergeAndPush ${module.name} - merge failed. Exiting`);
+                            process.exit();
+                        }
+
+                        console.log(`doMergeAndPush ${module.name} - merge master into ${stream2ABranch}. SUCCESS`);
+                        mergeOK = true;
+                    } catch (e) {
+                        console.log(`doMergeAndPush ${module.name} - merge master into ${stream2ABranch}. Error: ${e}`);
+
+                        await prompt.get({
+                            description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
+                        });
+
+                        let rfc = stream2ABranch.split('/')[1];
+                        await git.commit(`refs #${rfc} - conflict fix`);
+                    }
+                } while (!mergeOK);
+
+                await git.push();
+            }
         }
     } else if (mode == 'jenkins') {
         let inProgressJobs = JSON.parse(JSON.stringify(runningJobs)).filter((job: any) => job.status === 'IN_PROGRESS');
