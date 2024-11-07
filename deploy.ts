@@ -334,13 +334,30 @@ async function doMergeAndPush(fixFormatEachBranch: boolean = false) {
             let fromMergeBranch = module.branches[i];
             let intoMergeBranch = module.branches[i - 1];
             console.log(`doMergeAndPush ${module.name} - starting merge ${intoMergeBranch} into ${fromMergeBranch}`);
-            let mergeResult = await git.mergeFromTo(fromMergeBranch, intoMergeBranch);
-            console.log(`doMergeAndPush ${module.name} - merge ${intoMergeBranch} into ${fromMergeBranch}. Result: ${JSON.stringify(mergeResult)}`);
 
-            if (mergeResult.failed) {
-                console.log(`doMergeAndPush ${module.name} - merge failed. Exiting`);
-                process.exit();
-            }
+            let mergeOK = false;
+
+            do {
+                try {
+                    let mergeResult = await git.mergeFromTo(fromMergeBranch, intoMergeBranch);
+                    if (mergeResult.failed) {
+                        console.log(`doMergeAndPush ${module.name} - merge failed. Exiting`);
+                        process.exit();
+                    }
+
+                    console.log(`doMergeAndPush ${module.name} - merge ${intoMergeBranch} into ${fromMergeBranch}. SUCCESS`);
+                    mergeOK = true;
+                } catch (e) {
+                    console.log(`doMergeAndPush ${module.name} - merge ${intoMergeBranch} into ${fromMergeBranch}. Error: ${e}`);
+
+                    await prompt.get({
+                        description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
+                    });
+
+                    let rfc = intoMergeBranch.split('/')[1];
+                    await git.commit(`refs #${rfc} - conflict fix`);
+                }
+            } while (!mergeOK);
 
             await git.push();
         }

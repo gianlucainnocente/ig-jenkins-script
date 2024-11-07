@@ -20,12 +20,11 @@ export const deloitteModules = [
 ]
 
 export const carteBranches = [
-    'feature/239865_239866_239867',
     'feature/239869_239870_239871'
 ];
 
 export const tradingBranches = [
-    'feature/250683_233675_233674'
+    'feature/250683_233675_233674_250806_251308'
 ];
 
 export const fondiBranches = [
