@@ -18,7 +18,7 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import {deloitteModules, modules, productionModules, stream2ABranch} from "./branches";
+import {deloitteModules, deloitteModulesToCreateBranch, modules, productionModules, stream2ABranch} from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -322,7 +322,7 @@ async function deploy() {
 }
 
 async function createBranches() {
-    for (let moduleName of deloitteModules) {
+    for (let moduleName of deloitteModulesToCreateBranch) {
         console.log(`createBranches ${moduleName}`);
         let module = modules.find(m => m.name === moduleName);
 
@@ -332,11 +332,11 @@ async function createBranches() {
         }
 
 
-        //let newBranch = 'feature/250680_219968_219966';
-        //let sourceBranch = 'feature/249646_219968_219966';
+        //let newBranch = 'feature/251418_219968_219966';
+        //let sourceBranch = 'feature/250680_219968_219966';
 
-        let newBranch = 'feature/250681_236339_236340';
-        let sourceBranch = 'feature/249649_236339_236340';
+        let newBranch = 'feature/251419_236339_236340';
+        let sourceBranch = 'feature/250681_236339_236340';
 
 
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
