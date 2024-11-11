@@ -1,9 +1,11 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const mvpBranch = 'feature/250680_219968_219966';
-export const stream2ABranch = 'feature/250681_236339_236340';
+export const mvpBranch = 'feature/251418_219968_219966';
+export const stream2ABranch = 'feature/251419_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
+
+export const stream3ABranchWave2 = 'feature/242909_230387_242908';
 
 export const deloitteModules = [
     'ib_flutter_lib_a11y_utils',
@@ -15,6 +17,7 @@ export const deloitteModules = [
     'ib_flutter_feature_conti',
     'ib_flutter_feature_ricariche',
     'ib_flutter_feature_prelievieversamenti',
+    'ib_flutter_feature_areapersonale',
     'ib_flutter_feature_homepage',
     'ib_flutter_app_banca'
 ]
@@ -53,7 +56,7 @@ export const carteBranches = [
 ];
 
 export const tradingBranches = [
-    'feature/250683_233675_233674_250806_251308'
+    'feature/251421_233675_233674'
 ];
 
 export const fondiBranches = [
@@ -68,6 +71,7 @@ export const modules = [
             mvpBranch,
             stream2ABranch,
             stream3ABranch,
+            stream3ABranchWave2,
         ],
         "parallelGroup": 0,
         "gitlabProjectId": "17003",
@@ -94,6 +98,7 @@ export const modules = [
             mvpBranch,
             stream2ABranch,
             stream3ABranch,
+            stream3ABranchWave2,
         ],
         "parallelGroup": 1,
         "gitlabProjectId": "16898",
@@ -145,7 +150,7 @@ export const modules = [
         "branches": [
             mvpBranch,
             stream2ABranch,
-            stream3ABranch
+            stream3ABranch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17021",
@@ -158,7 +163,7 @@ export const modules = [
         "branches": [
             mvpBranch,
             stream2ABranch,
-            stream3ABranch
+            stream3ABranch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16933",
@@ -202,7 +207,7 @@ export const modules = [
         "branches": [
             mvpBranch,
             stream2ABranch,
-            stream3ABranch
+            stream3ABranch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17087",
@@ -213,7 +218,7 @@ export const modules = [
         "name": "ib_flutter_feature_prelievieversamenti",
         "namespace": "nib",
         "branches": [
-            stream3ABranch
+            stream3ABranch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "18847",
@@ -226,7 +231,18 @@ export const modules = [
         "branches": [
             mvpBranch,
             stream2ABranch,
-            stream3ABranch
+            stream3ABranch,
+        ],
+        "parallelGroup": 2,
+        "gitlabProjectId": "16903",
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
+    },
+    {
+        "name": "ib_flutter_feature_areapersonale",
+        "namespace": "nib",
+        "branches": [
+            stream3ABranchWave2,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16903",
@@ -249,6 +265,7 @@ export const modules = [
             mvpBranch,
             stream2ABranch,
             stream3ABranch,
+            stream3ABranchWave2,
         ],
         "parallelGroup": 3,
         "gitlabProjectId": "16896",
