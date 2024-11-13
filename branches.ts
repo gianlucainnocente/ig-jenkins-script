@@ -56,7 +56,7 @@ export const carteBranches = [
 ];
 
 export const tradingBranches = [
-    'feature/251421_233675_233674'
+    'feature/250043_250045_250046'
 ];
 
 export const fondiBranches = [
