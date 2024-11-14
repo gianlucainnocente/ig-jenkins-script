@@ -183,7 +183,7 @@ export const modules = [
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
-    {
+    /*{
         "name": "ib_flutter_feature_carte",
         "namespace": "nib",
         "branches": carteBranches,
@@ -200,7 +200,7 @@ export const modules = [
         "gitlabProjectId": "17015",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
-    },
+    },*/
     {
         "name": "ib_flutter_feature_ricariche",
         "namespace": "nib",
@@ -245,11 +245,11 @@ export const modules = [
             stream3ABranchWave2,
         ],
         "parallelGroup": 2,
-        "gitlabProjectId": "16903",
+        "gitlabProjectId": "19214",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
-    {
+    /*{
         "name": "ib_flutter_feature_fondi",
         "namespace": "nib",
         "branches": fondiBranches,
@@ -257,7 +257,7 @@ export const modules = [
         "gitlabProjectId": "17930",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
-    },
+    },*/
     {
         "name": "ib_flutter_app_banca",
         "namespace": "nib",
