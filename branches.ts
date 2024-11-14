@@ -1,8 +1,7 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const mvpBranch = 'feature/251418_219968_219966';
-export const stream2ABranch = 'feature/251419_236339_236340';
+export const stream2ABranch = 'feature/251788_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
 
 export const stream3ABranchWave2 = 'feature/242909_230387_242908';
@@ -68,7 +67,6 @@ export const modules = [
         "name": "cross_flutter_libarch_uicomponents",
         "namespace": "architettura",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
             stream3ABranchWave2,
@@ -82,7 +80,6 @@ export const modules = [
         "name": "cross_flutter_libarch_shared",
         "namespace": "architettura",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -95,7 +92,6 @@ export const modules = [
         "name": "ib_flutter_lib_a11y_utils",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
             stream3ABranchWave2,
@@ -109,7 +105,6 @@ export const modules = [
         "name": "ib_flutter_feature_keyhole",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -122,7 +117,6 @@ export const modules = [
         "name": "ib_flutter_feature_bollettini",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -135,7 +129,6 @@ export const modules = [
         "name": "ib_flutter_feature_login",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -148,7 +141,6 @@ export const modules = [
         "name": "ib_flutter_feature_bonifici",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -161,7 +153,6 @@ export const modules = [
         "name": "ib_flutter_feature_tributi",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -174,7 +165,6 @@ export const modules = [
         "name": "ib_flutter_feature_conti",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -205,7 +195,6 @@ export const modules = [
         "name": "ib_flutter_feature_ricariche",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -229,7 +218,6 @@ export const modules = [
         "name": "ib_flutter_feature_homepage",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
         ],
@@ -262,7 +250,6 @@ export const modules = [
         "name": "ib_flutter_app_banca",
         "namespace": "nib",
         "branches": [
-            mvpBranch,
             stream2ABranch,
             stream3ABranch,
             stream3ABranchWave2,
