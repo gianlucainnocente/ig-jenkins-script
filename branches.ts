@@ -51,11 +51,11 @@ export const productionModules = [
 ]
 
 export const carteBranches = [
-    'feature/239869_239870_239871'
+    'feature/251789_239866_239867'
 ];
 
 export const tradingBranches = [
-    'feature/250043_250045_250046'
+    'feature/251790_233675_233674'
 ];
 
 export const fondiBranches = [
@@ -173,7 +173,7 @@ export const modules = [
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
-    /*{
+    {
         "name": "ib_flutter_feature_carte",
         "namespace": "nib",
         "branches": carteBranches,
@@ -190,7 +190,7 @@ export const modules = [
         "gitlabProjectId": "17015",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
-    },*/
+    },
     {
         "name": "ib_flutter_feature_ricariche",
         "namespace": "nib",
@@ -237,7 +237,7 @@ export const modules = [
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
-    /*{
+    {
         "name": "ib_flutter_feature_fondi",
         "namespace": "nib",
         "branches": fondiBranches,
@@ -245,7 +245,7 @@ export const modules = [
         "gitlabProjectId": "17930",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
-    },*/
+    },
     {
         "name": "ib_flutter_app_banca",
         "namespace": "nib",
