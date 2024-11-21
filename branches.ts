@@ -1,10 +1,8 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const stream2ABranch = 'feature/251788_236339_236340';
+export const stream2ABranch = 'feature/252649_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
-
-export const stream3ABranchWave2 = 'feature/242909_230387_242908';
 
 export const deloitteModules = [
     'ib_flutter_lib_a11y_utils',
@@ -16,7 +14,6 @@ export const deloitteModules = [
     'ib_flutter_feature_conti',
     'ib_flutter_feature_ricariche',
     'ib_flutter_feature_prelievieversamenti',
-    'ib_flutter_feature_areapersonale',
     'ib_flutter_feature_homepage',
     'ib_flutter_app_banca'
 ]
@@ -51,11 +48,11 @@ export const productionModules = [
 ]
 
 export const carteBranches = [
-    'feature/251789_239866_239867'
+    'feature/252651_239866_239867'
 ];
 
 export const tradingBranches = [
-    'feature/251790_233675_233674'
+    'feature/252654_233675_233674'
 ];
 
 export const fondiBranches = [
@@ -69,7 +66,6 @@ export const modules = [
         "branches": [
             stream2ABranch,
             stream3ABranch,
-            stream3ABranchWave2,
         ],
         "parallelGroup": 0,
         "gitlabProjectId": "17003",
@@ -94,7 +90,6 @@ export const modules = [
         "branches": [
             stream2ABranch,
             stream3ABranch,
-            stream3ABranchWave2,
         ],
         "parallelGroup": 1,
         "gitlabProjectId": "16898",
@@ -227,17 +222,6 @@ export const modules = [
         "autoapprove": true
     },
     {
-        "name": "ib_flutter_feature_areapersonale",
-        "namespace": "nib",
-        "branches": [
-            stream3ABranchWave2,
-        ],
-        "parallelGroup": 2,
-        "gitlabProjectId": "19214",
-        "jenkinsJob": "flutter_lib",
-        "autoapprove": true
-    },
-    {
         "name": "ib_flutter_feature_fondi",
         "namespace": "nib",
         "branches": fondiBranches,
@@ -252,7 +236,6 @@ export const modules = [
         "branches": [
             stream2ABranch,
             stream3ABranch,
-            stream3ABranchWave2,
         ],
         "parallelGroup": 3,
         "gitlabProjectId": "16896",
