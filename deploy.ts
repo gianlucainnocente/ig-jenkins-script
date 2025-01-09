@@ -95,6 +95,10 @@ async function deploy() {
             mode = 'masterToStream2';
             executeGenerate = false;
             executeTests = false;
+        }  else if (response.question == '6') {
+            mode = 'createAndApproveMergeRequests';
+            executeGenerate = false;
+            executeTests = false;
         }/* else if (response.question == '2') {
             mode = 'full';
             executeGenerate = false;
@@ -256,7 +260,7 @@ async function deploy() {
         } else if (mode == 'branch') {
             await createBranches();
         } else if (mode == 'masterToStream2') {
-            for (let module of productionModules) {
+            for (let module of deloitteModulesToCreateBranch) {
                 process.chdir('../' + module);
                 console.log(`doMergeAndPush ${module} - move to folder ${process.cwd()}`);
 
@@ -335,8 +339,8 @@ async function createBranches() {
         //let newBranch = 'feature/251418_219968_219966';
         //let sourceBranch = 'feature/250680_219968_219966';
 
-        let newBranch = 'feature/254872_236339_236340';
-        let sourceBranch = 'feature/254087_236339_236340';
+        let newBranch = 'feature/255592_236339_236340';
+        let sourceBranch = 'feature/254872_236339_236340';
 
 
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
