@@ -1,8 +1,7 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const stream2ABranch = 'feature/256282_236339_236340';
-export const stream3ABranch = 'feature/236348_236342_236341';
+export const stream23Branch = 'feature/256282_236339_236340';
 export const areaPersonaleBranch = 'feature/242909_230387_242908';
 
 export const deloitteModules = [
@@ -65,8 +64,7 @@ export const modules = [
         "name": "cross_flutter_libarch_uicomponents",
         "namespace": "architettura",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 0,
         "gitlabProjectId": "17003",
@@ -77,8 +75,7 @@ export const modules = [
         "name": "cross_flutter_libarch_shared",
         "namespace": "architettura",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 0,
         "gitlabProjectId": "16894",
@@ -89,8 +86,7 @@ export const modules = [
         "name": "ib_flutter_lib_a11y_utils",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 1,
         "gitlabProjectId": "16898",
@@ -101,8 +97,7 @@ export const modules = [
         "name": "ib_flutter_feature_keyhole",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "18637",
@@ -113,8 +108,7 @@ export const modules = [
         "name": "ib_flutter_feature_bollettini",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16937",
@@ -125,8 +119,7 @@ export const modules = [
         "name": "ib_flutter_feature_login",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16902",
@@ -137,8 +130,7 @@ export const modules = [
         "name": "ib_flutter_feature_bonifici",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17021",
@@ -149,8 +141,7 @@ export const modules = [
         "name": "ib_flutter_feature_tributi",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16933",
@@ -161,8 +152,7 @@ export const modules = [
         "name": "ib_flutter_feature_conti",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17017",
@@ -191,8 +181,7 @@ export const modules = [
         "name": "ib_flutter_feature_ricariche",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17087",
@@ -225,8 +214,7 @@ export const modules = [
         "name": "ib_flutter_feature_homepage",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16903",
@@ -246,8 +234,7 @@ export const modules = [
         "name": "ib_flutter_app_banca",
         "namespace": "nib",
         "branches": [
-            stream2ABranch,
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 3,
         "gitlabProjectId": "16896",
