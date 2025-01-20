@@ -1,7 +1,7 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const stream2ABranch = 'feature/255592_236339_236340';
+export const stream2ABranch = 'feature/256282_236339_236340';
 export const stream3ABranch = 'feature/236348_236342_236341';
 export const areaPersonaleBranch = 'feature/242909_230387_242908';
 
