@@ -339,8 +339,8 @@ async function createBranches() {
         //let newBranch = 'feature/251418_219968_219966';
         //let sourceBranch = 'feature/250680_219968_219966';
 
-        let newBranch = 'feature/255592_236339_236340';
-        let sourceBranch = 'feature/254872_236339_236340';
+        let newBranch = 'feature/256282_236339_236340';
+        let sourceBranch = 'feature/255592_236339_236340';
 
 
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
