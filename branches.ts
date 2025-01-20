@@ -192,7 +192,7 @@ export const modules = [
         "name": "ib_flutter_feature_prelievieversamenti",
         "namespace": "nib",
         "branches": [
-            stream3ABranch,
+            stream23Branch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "18847",
