@@ -18,7 +18,7 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import {deloitteModules, deloitteModulesToCreateBranch, modules, productionModules, stream2ABranch} from "./branches";
+import {deloitteModules, deloitteModulesToCreateBranch, modules, productionModules, stream23Branch} from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -280,29 +280,29 @@ async function deploy() {
                 await git.pull(remotes[0].name, targetBranch)
 
                 await git.reset(ResetMode.HARD);
-                await git.checkout(stream2ABranch);
-                await git.pull(remotes[0].name, stream2ABranch)
+                await git.checkout(stream23Branch);
+                await git.pull(remotes[0].name, stream23Branch)
 
                 let mergeOK = false;
 
                 do {
                     try {
-                        let mergeResult = await git.mergeFromTo(targetBranch, stream2ABranch);
+                        let mergeResult = await git.mergeFromTo(targetBranch, stream23Branch);
                         if (mergeResult.failed) {
                             console.log(`doMergeAndPush ${module} - merge failed. Exiting`);
                             process.exit();
                         }
 
-                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream2ABranch}. SUCCESS`);
+                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream23Branch}. SUCCESS`);
                         mergeOK = true;
                     } catch (e) {
-                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream2ABranch}. Error: ${e}`);
+                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream23Branch}. Error: ${e}`);
 
                         await prompt.get({
                             description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
                         });
 
-                        let rfc = stream2ABranch.split('/')[1];
+                        let rfc = stream23Branch.split('/')[1];
                         await git.commit(`refs #${rfc} - conflict fix`);
                     }
                 } while (!mergeOK);
