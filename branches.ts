@@ -4,6 +4,8 @@ Aggiornare eventualmente il branch MVP
 export const stream23Branch = 'feature/257817_236340_236339';
 export const areaPersonaleBranch = 'feature/242909_230387_242908';
 
+export const areaDocumentiBranch = 'feature/257817_236340_236339';
+
 export const deloitteModules = [
     'ib_flutter_lib_a11y_utils',
     'ib_flutter_feature_keyhole',
@@ -204,6 +206,17 @@ export const modules = [
         "namespace": "nib",
         "branches": [
             areaPersonaleBranch,
+        ],
+        "parallelGroup": 2,
+        "gitlabProjectId": "19214",
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
+    },
+    {
+        "name": "ib_flutter_feature_areapersonale",
+        "namespace": "nib",
+        "branches": [
+            areaDocumentiBranch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19214",
