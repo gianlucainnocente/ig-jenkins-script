@@ -221,7 +221,8 @@ export const modules = [
         "parallelGroup": 2,
         "gitlabProjectId": "19214",
         "jenkinsJob": "flutter_lib",
-        "autoapprove": true
+        "autoapprove": true,
+        "increaseVersion": false
     },
     {
         "name": "ib_flutter_feature_homepage",

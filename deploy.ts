@@ -504,7 +504,11 @@ async function doSetVersions() {
             newVersion = crossSharedVersion;
         } else {
             let numberVersion = currentVersion.replace('0.0.', '').replace('-SNAPSHOT', '');
-            newVersion = `0.0.${parseInt(numberVersion) + 1}-SNAPSHOT`;
+            if (module?.increaseVersion != false) {
+                newVersion = `0.0.${parseInt(numberVersion) + 1}-SNAPSHOT`;
+            } else {
+                newVersion = currentVersion;
+            }
         }
 
         console.log(`doSetVersions ${module.name} - new version: ${newVersion}`);
