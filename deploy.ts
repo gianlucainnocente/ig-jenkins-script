@@ -504,11 +504,7 @@ async function doSetVersions() {
             newVersion = crossSharedVersion;
         } else {
             let numberVersion = currentVersion.replace('0.0.', '').replace('-SNAPSHOT', '');
-            if (module?.increaseVersion != false) {
-                newVersion = `0.0.${parseInt(numberVersion) + 1}-SNAPSHOT`;
-            } else {
-                newVersion = currentVersion;
-            }
+            newVersion = `0.0.${parseInt(numberVersion) + 1}-SNAPSHOT`;
         }
 
         console.log(`doSetVersions ${module.name} - new version: ${newVersion}`);
@@ -543,7 +539,12 @@ async function doSetVersions() {
     for (let module of modules) {
         //cross_flutter_libarch_shared: '>= 0.0.230-SNAPSHOT <1.0.0'
         process.chdir('../' + module.name);
-
+        if (module?.commitBeforeCheckOut == true) {
+            await git.add('.');
+            let rfc = module.branches[module.branches.length - 1].split('/')[1];
+            let commitResult = await git.commit(`refs #${rfc} - Version`);
+            //commits[module.name] = commitResult.commit;
+        }
         await git.checkout(module.branches[module.branches.length - 1]);
         console.log(`doSetVersions ${module.name} - updating dependencies into ${process.cwd()}`);
         let buffer = fs.readFileSync(`${process.cwd()}/pubspec.yaml`);
@@ -565,6 +566,13 @@ async function doSetVersions() {
         fs.writeFile(`${process.cwd()}/pubspec.yaml`, newContent, 'utf8', function (err) {
             if (err) return console.log(err);
         });
+        console.log(`doSetVersions ${module.name} - commitBeforeCheckOut ${module.commitBeforeCheckOut}`);
+        if (module?.commitBeforeCheckOut == true) {
+            await git.add('.');
+            let rfc = module.branches[module.branches.length - 1].split('/')[1];
+            let commitResult = await git.commit(`refs #${rfc} - Version`);
+            //commits[module.name] = commitResult.commit;
+        }
     }
 }
 

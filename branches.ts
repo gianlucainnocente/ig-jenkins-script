@@ -93,6 +93,18 @@ export const modules = [
         "parallelGroup": 1,
         "gitlabProjectId": "16898",
         "jenkinsJob": "flutter_lib",
+        "autoapprove": true,
+        "commitBeforeCheckOut": true
+    },
+    {
+        "name": "ib_flutter_lib_a11y_utils",
+        "namespace": "nib",
+        "branches": [
+            areaPersonaleBranch,
+        ],
+        "parallelGroup": 1,
+        "gitlabProjectId": "16898",
+        "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
     {
@@ -211,7 +223,7 @@ export const modules = [
         "gitlabProjectId": "19214",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true,
-        "increaseVersion": false
+        "commitBeforeCheckOut": true
     },
     {
         "name": "ib_flutter_feature_areapersonale",
