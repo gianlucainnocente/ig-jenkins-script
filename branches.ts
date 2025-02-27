@@ -32,7 +32,9 @@ export const deloitteModulesToCreateBranch = [
     'ib_flutter_feature_tributi',
     'ib_flutter_feature_conti',
     'ib_flutter_feature_ricariche',
+    'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
+    'ib_flutter_feature_areapersonale',
     'ib_flutter_app_banca'
 ]
 
