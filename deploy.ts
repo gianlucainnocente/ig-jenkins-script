@@ -84,7 +84,7 @@ async function deploy() {
 
     if (mode !== 'jenkins') {
         let response = await prompt.get({
-            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Merge master su stream 2'
+            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Merge master su stream 23'
         });
 
         if (response.question == '1') {
@@ -339,8 +339,8 @@ async function createBranches() {
         //let newBranch = 'feature/251418_219968_219966';
         //let sourceBranch = 'feature/250680_219968_219966';
 
-        let newBranch = 'feature/258992_236340_236339';
-        let sourceBranch = 'feature/258422_236340_236339';
+        let newBranch = 'feature/259525_236340_236339';
+        let sourceBranch = 'feature/258992_236340_236339';
 
 
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
