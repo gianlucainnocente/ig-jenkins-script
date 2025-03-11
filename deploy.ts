@@ -92,7 +92,7 @@ async function deploy() {
             executeGenerate = false;
             executeTests = false;
         } else if (response.question == '2') {
-            mode = 'masterToStream2';
+            mode = 'masterToStream23';
             executeGenerate = false;
             executeTests = false;
         }  else if (response.question == '6') {
@@ -259,7 +259,7 @@ async function deploy() {
             }
         } else if (mode == 'branch') {
             await createBranches();
-        } else if (mode == 'masterToStream2') {
+        } else if (mode == 'masterToStream23') {
             for (let module of deloitteModulesToCreateBranch) {
                 process.chdir('../' + module);
                 console.log(`doMergeAndPush ${module} - move to folder ${process.cwd()}`);
