@@ -1,10 +1,10 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const stream23Branch = 'feature/259954_236340_236339';
+export const stream23Branch = 'feature/260497_259889_259887';
 export const areaPersonaleBranch = 'feature/242909_230387_242908';
 
-export const areaDocumentiBranch = 'feature/259954_236340_236339';
+export const areaDocumentiBranch = 'feature/260497_259889_259887';
 
 export const deloitteModules = [
     'ib_flutter_lib_a11y_utils',
