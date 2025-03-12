@@ -58,6 +58,10 @@ async function deploy() {
     let executeTests = false;
     let executeGenerate = false;
     let fixFormatEachBranch = false;
+    let executeMergeFrom;
+    let executeMergeTo;
+    let executeAppBancaMergeFrom;
+    let executeAppBancaMergeTo;
 
     try {
         let jsonRunningJobs = fs.readFileSync(runnngJobsPath);
@@ -84,7 +88,7 @@ async function deploy() {
 
     if (mode !== 'jenkins') {
         let response = await prompt.get({
-            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Merge master su stream 23'
+            description: 'Quale modalità vuoi avviare?\n1 - Deploy completo senza test\n2 - Merge master su stream 23, App_Banca preproduzione_produzione su stream 23\n3 - Merge master su develop, App_Banca preproduzione_produzione su systemtest'
         });
 
         if (response.question == '1') {
@@ -92,9 +96,21 @@ async function deploy() {
             executeGenerate = false;
             executeTests = false;
         } else if (response.question == '2') {
-            mode = 'masterToStream23';
+            mode = 'branch1ToBranch2';
             executeGenerate = false;
             executeTests = false;
+            executeMergeFrom = 'master';
+            executeMergeTo = stream23Branch;
+            executeAppBancaMergeFrom = 'preproduzione_produzione';
+            executeAppBancaMergeTo = stream23Branch;
+        } else if (response.question == '3') {
+            mode = 'branch1ToBranch2';
+            executeGenerate = false;
+            executeTests = false;
+            executeMergeFrom = 'master';
+            executeMergeTo = 'develop';
+            executeAppBancaMergeFrom = 'preproduzione_produzione';
+            executeAppBancaMergeTo = 'systemtest';
         }  else if (response.question == '6') {
             mode = 'createAndApproveMergeRequests';
             executeGenerate = false;
@@ -259,51 +275,69 @@ async function deploy() {
             }
         } else if (mode == 'branch') {
             await createBranches();
-        } else if (mode == 'masterToStream23') {
+        } else if (mode == 'branch1ToBranch2') {
+            if (!executeMergeFrom || !executeMergeTo || !executeAppBancaMergeFrom || !executeAppBancaMergeTo) {
+                console.log(`Valori per merge non validi: From ${executeMergeFrom} - To ${executeMergeTo}`);
+                console.log(`Valori per merge non validi App_Banca: From ${executeAppBancaMergeFrom} - To ${executeAppBancaMergeTo}`);
+                process.exit();
+            } else {
+                console.log(`Si sta per effettuare seguente merge: From ${executeMergeFrom} - To ${executeMergeTo}; App_Banca From ${executeAppBancaMergeFrom} - To ${executeAppBancaMergeTo}`);
+            }
+            await prompt.get({
+                description: 'Si sta per effettuare un merge. Premi un tasto per proseguire.'
+            });
             for (let module of deloitteModulesToCreateBranch) {
                 process.chdir('../' + module);
                 console.log(`doMergeAndPush ${module} - move to folder ${process.cwd()}`);
 
-                let targetBranch = 'master';
+                let targetBranchFrom = executeMergeFrom;
+                let targetBranchTo = executeMergeTo;
                 if (module === 'ib_flutter_app_banca') {
-                    targetBranch = 'preproduzione_produzione';
+                    targetBranchFrom = executeAppBancaMergeFrom;
+                    targetBranchTo = executeAppBancaMergeTo;
                 }
 
                 let remotes = await git.getRemotes();
                 console.log(`doMergeAndPush ${module} - remotes: ${JSON.stringify(remotes)}`);
 
                 await git.reset(ResetMode.HARD);
-                await git.checkout(targetBranch);
+                await git.checkout(targetBranchFrom);
 
-                console.log(`doMergeAndPush ${module} - checkout on branch master`);
+                console.log(`doMergeAndPush ${module} - checkout on branch ${targetBranchFrom}`);
 
-                await git.pull(remotes[0].name, targetBranch)
+                await git.pull(remotes[0].name, targetBranchFrom)
 
                 await git.reset(ResetMode.HARD);
-                await git.checkout(stream23Branch);
-                await git.pull(remotes[0].name, stream23Branch)
+                await git.checkout(targetBranchTo);
+                await git.pull(remotes[0].name, targetBranchTo)
 
                 let mergeOK = false;
 
                 do {
                     try {
-                        let mergeResult = await git.mergeFromTo(targetBranch, stream23Branch);
+                        let mergeResult = await git.mergeFromTo(targetBranchFrom, targetBranchTo);
                         if (mergeResult.failed) {
                             console.log(`doMergeAndPush ${module} - merge failed. Exiting`);
                             process.exit();
                         }
 
-                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream23Branch}. SUCCESS`);
+                        console.log(`doMergeAndPush ${module} - merge ${targetBranchFrom} into ${targetBranchTo}. SUCCESS`);
                         mergeOK = true;
                     } catch (e) {
-                        console.log(`doMergeAndPush ${module} - merge ${targetBranch} into ${stream23Branch}. Error: ${e}`);
+                        console.log(`doMergeAndPush ${module} - merge ${targetBranchFrom} into ${targetBranchTo}. Error: ${e}`);
 
                         await prompt.get({
                             description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
                         });
 
-                        let rfc = stream23Branch.split('/')[1];
+                        let rfc;
+                        if (targetBranchTo.includes('/')) {
+                            rfc = targetBranchTo.split('/')[1];
+                        } else {
+                            rfc = '999999';
+                        }
                         await git.commit(`refs #${rfc} - conflict fix`);
+
                     }
                 } while (!mergeOK);
 
