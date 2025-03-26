@@ -2,79 +2,100 @@ import { appBancaDir } from './constants';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Percorsi dei file
-const baseDir = path.join(appBancaDir, 'assets/flutter_i18n');
-const inputFile = path.join(baseDir, 'it.json');
-const sortedFile = path.join(baseDir, 'it_sorted.json');
-const sortedCleanedFile = path.join(baseDir, 'it_sorted_cleaned.json');
+// Percorso della directory
+const baseDir = path.join(appBancaDir, 'assets/flutter_i18n/it');
 
-// Controlla se il file di input esiste
-if (!fs.existsSync(inputFile)) {
-    console.error(`❌ Errore: Il file ${inputFile} non esiste.`);
+// Controlla se la directory esiste
+if (!fs.existsSync(baseDir)) {
+    console.error(`❌ Errore: La directory ${baseDir} non esiste.`);
     process.exit(1);
 }
 
-// **1️⃣ Lettura del file come testo senza alterare escape**
-const rawData = fs.readFileSync(inputFile, 'utf-8').trim();
-const cleanData = rawData.replace(/^\uFEFF/, ''); // Rimuove eventuali caratteri BOM
+// Recupera tutti i file JSON presenti nella directory
+const jsonFiles = fs.readdirSync(baseDir).filter(file => file.endsWith('.json'));
 
-// **2️⃣ Parsing manuale per mantenere gli escape originali**
-const entryRegex = /"([^"]+)":\s*"((?:[^"\\]|\\.)*)"/g;
-const entries: { key: string; value: string; raw: string }[] = [];
-
-let match;
-while ((match = entryRegex.exec(cleanData)) !== null) {
-    entries.push({ key: match[1], value: match[2], raw: match[0] });
+if (jsonFiles.length === 0) {
+    console.error(`❌ Errore: Nessun file JSON trovato in ${baseDir}.`);
+    process.exit(1);
 }
 
-// **3️⃣ Creazione di it_sorted.json (senza modificare il formato originale)**
-entries.sort((a, b) => a.key.localeCompare(b.key));
+console.log(`\n📂 Elaborazione dei file JSON nella directory: ${baseDir}\n`);
 
-const sortedJson = `{\n${entries.map(e => `  ${e.raw}`).join(',\n')}\n}`;
-fs.writeFileSync(sortedFile, sortedJson, 'utf-8');
-console.log(`✅ Creato file ordinato: ${sortedFile} (righe: ${entries.length})`);
+// Funzione per elaborare un file JSON
+const processJsonFile = (fileName: string) => {
+    const filePath = path.join(baseDir, fileName);
+    const sortedFilePath = path.join(baseDir, fileName.replace('.json', '_sorted.json'));
+    const sortedCleanedFilePath = path.join(baseDir, fileName.replace('.json', '_sorted_cleaned.json'));
 
-// **4️⃣ Creazione di it_sorted_cleaned.json mantenendo il formato originale**
-const groupedEntries = new Map<string, Set<string>>();
-const rawLines = new Map<string, Set<string>>(); // Mappa per mantenere il formato originale
+    // Lettura del file come testo senza alterare escape
+    const rawData = fs.readFileSync(filePath, 'utf-8').trim();
+    const cleanData = rawData.replace(/^\uFEFF/, ''); // Rimuove eventuali caratteri BOM
 
-entries.forEach(({ key, value, raw }) => {
-    if (!groupedEntries.has(key)) {
-        groupedEntries.set(key, new Set());
-        rawLines.set(key, new Set());
+    // Parsing manuale per mantenere gli escape originali
+    const entryRegex = /"([^"\\]+)":\s*"((?:[^"\\]|\\.)*)"/g;
+    const entries: { key: string; value: string; raw: string }[] = [];
+
+    let match;
+    while ((match = entryRegex.exec(cleanData)) !== null) {
+        entries.push({ key: match[1], value: match[2], raw: match[0] });
     }
-    groupedEntries.get(key)!.add(value);
-    rawLines.get(key)!.add(raw); // Mantiene la formattazione originale della riga
-});
 
-// **5️⃣ Stampa in colonna delle chiavi con più di un valore**
-const keysWithMultipleValues: string[] = [];
-groupedEntries.forEach((values, key) => {
-    if (values.size > 1) {
-        keysWithMultipleValues.push(key);
-    }
-});
+    // Ordinamento delle chiavi
+    entries.sort((a, b) => a.key.localeCompare(b.key));
 
-if (keysWithMultipleValues.length > 0) {
-    console.log(`\n⚠️ Chiavi con più di un valore:`);
-    keysWithMultipleValues.forEach(key => console.log(`  - ${key}`));
-} else {
-    console.log(`\n✅ Nessuna chiave con più di un valore`);
-}
+    // Creazione del file ordinato
+    const sortedJson = `{
+${entries.map(e => `  ${e.raw}`).join(',\n')}
+}`;
+    fs.writeFileSync(sortedFilePath, sortedJson, 'utf-8');
+    console.log(`✅ Creato file ordinato: ${sortedFilePath}`);
 
-// **6️⃣ Scrittura del file it_sorted_cleaned.json**
-const cleanedEntries: string[] = [];
-groupedEntries.forEach((values, key) => {
-    if (values.size === 1) {
-        // Se la chiave ha un solo valore, manteniamo la riga originale
-        cleanedEntries.push([...rawLines.get(key)!][0]);
+    // Identifica chiavi duplicate e mantiene la formattazione originale
+    const groupedEntries = new Map<string, Set<string>>();
+    const rawLines = new Map<string, Set<string>>();
+
+    entries.forEach(({ key, value, raw }) => {
+        if (!groupedEntries.has(key)) {
+            groupedEntries.set(key, new Set());
+            rawLines.set(key, new Set());
+        }
+        groupedEntries.get(key)!.add(value);
+        rawLines.get(key)!.add(raw);
+    });
+
+    // Stampa chiavi con più di un valore
+    const keysWithMultipleValues: string[] = [];
+    groupedEntries.forEach((values, key) => {
+        if (values.size > 1) {
+            keysWithMultipleValues.push(key);
+        }
+    });
+
+    if (keysWithMultipleValues.length > 0) {
+        console.log(`⚠️ Chiavi con più di un valore nel file ${fileName}:`);
+        keysWithMultipleValues.forEach(key => console.log(`  - ${key}`));
     } else {
-        // Se la chiave ha più valori diversi, li scriviamo tutti
-        cleanedEntries.push(...rawLines.get(key)!);
+        console.log(`✅ Nessuna chiave con più di un valore in ${fileName}`);
     }
-});
 
-const cleanedJson = `{\n${cleanedEntries.map(line => `  ${line}`).join(',\n')}\n}`;
-fs.writeFileSync(sortedCleanedFile, cleanedJson, 'utf-8');
+    // Creazione del file pulito mantenendo il formato originale
+    const cleanedEntries: string[] = [];
+    groupedEntries.forEach((values, key) => {
+        if (values.size === 1) {
+            cleanedEntries.push([...rawLines.get(key)!][0]);
+        } else {
+            cleanedEntries.push(...rawLines.get(key)!);
+        }
+    });
 
-console.log(`✅ Creato file pulito con chiavi duplicate mantenute: ${sortedCleanedFile} (righe: ${cleanedEntries.length})`);
+    const cleanedJson = `{
+${cleanedEntries.map(line => `  ${line}`).join(',\n')}
+}`;
+    fs.writeFileSync(sortedCleanedFilePath, cleanedJson, 'utf-8');
+    console.log(`✅ Creato file pulito: ${sortedCleanedFilePath}`);
+};
+
+// Processa tutti i file JSON nella directory
+jsonFiles.forEach(file => processJsonFile(file));
+
+console.log(`\n🔍 Elaborazione completata per tutti i file JSON!\n`);
