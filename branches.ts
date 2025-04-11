@@ -1,11 +1,11 @@
 /*
 Aggiornare eventualmente il branch MVP
  */
-export const stream23Branch = 'feature/262981_262982_262985';
+export const stream23Branch = 'feature/262981_261621_261622';
 export const areaPersonaleBranch = 'feature/242909_230387_242908';
 export const polizzeBranch = 'feature/258251_258255_258256';
 
-export const areaDocumentiBranch = 'feature/262981_262982_262985';
+export const areaDocumentiBranch = 'feature/262981_261621_261622';
 
 export const deloitteModules = [
     'ib_flutter_lib_a11y_utils',
@@ -234,7 +234,7 @@ export const modules = [
         "name": "ib_flutter_feature_areapersonale",
         "namespace": "nib",
         "branches": [
-            areaDocumentiBranch,
+                areaDocumentiBranch,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19214",

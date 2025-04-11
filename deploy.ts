@@ -373,7 +373,7 @@ async function createBranches() {
         //let newBranch = 'feature/262406_261621_261622';
         //let sourceBranch = 'feature/261531_261621_261622';
 
-        let newBranch = 'feature/262981_262982_262985';
+        let newBranch = 'feature/262981_261621_261622';
         let sourceBranch = 'feature/262406_261621_261622';
 
 
