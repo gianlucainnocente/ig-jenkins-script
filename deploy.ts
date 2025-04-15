@@ -18,7 +18,7 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import {deloitteModules, deloitteModulesToCreateBranch, modules, productionModules, stream23Branch} from "./branches";
+import {deloitteModules, deloitteModulesToMerge, deloitteModulesToCreateBranch, modules, productionModules, stream23Branch} from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -286,7 +286,7 @@ async function deploy() {
             await prompt.get({
                 description: 'Si sta per effettuare un merge. Premi un tasto per proseguire.'
             });
-            for (let module of deloitteModulesToCreateBranch) {
+            for (let module of deloitteModulesToMerge) {
                 process.chdir('../' + module);
                 console.log(`doMergeAndPush ${module} - move to folder ${process.cwd()}`);
 
