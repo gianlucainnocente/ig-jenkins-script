@@ -5,6 +5,8 @@ export const stream23Branch = 'feature/262981_261621_261622';
 export const areaPersonaleBranch = 'feature/242909_230387_242908';
 export const polizzeBranch = 'feature/258251_258255_258256';
 
+export const rewardingBranch = 'feature/259787_259788_259789';
+
 export const areaDocumentiBranch = 'feature/262981_261621_261622';
 
 export const deloitteModules = [
@@ -19,6 +21,7 @@ export const deloitteModules = [
     'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
     'ib_flutter_feature_polizze',
+    'ib_flutter_feature_rewarding',
     'ib_flutter_feature_areapersonale',
     'ib_flutter_app_banca'
 ]
@@ -275,6 +278,17 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19701",
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
+    },
+    {
+        "name": "ib_flutter_feature_rewarding",
+        "namespace": "nib",
+        "branches": [
+            rewardingBranch,
+        ],
+        "parallelGroup": 2,
+        "gitlabProjectId": "19878",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
