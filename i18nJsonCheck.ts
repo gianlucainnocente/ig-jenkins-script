@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import * as readline from 'readline';
 import { appBancaDir } from './constants';
 
 // Percorsi delle directory
@@ -120,3 +121,32 @@ if (differentContentFiles.length > 0) {
 }
 
 console.log(`\n🔍 Verifica completata!\n`);
+
+// Chiede se si vogliono copiare i file diversi
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+const filesToCopy = [...onlyInDir1, ...differentContentFiles];
+
+if (filesToCopy.length > 0) {
+    rl.question('📥 Vuoi copiare i file diversi da dir1 a dir2? (s/n): ', (answer) => {
+        if (answer.trim().toLowerCase() === 's') {
+            filesToCopy.forEach(file => {
+                const srcPath = path.join(dir1, file);
+                const destPath = path.join(dir2, file);
+                const destDir = path.dirname(destPath);
+                fs.mkdirSync(destDir, { recursive: true });
+                fs.copyFileSync(srcPath, destPath);
+                console.log(`${CHECK} Copiato: ${file}`);
+            });
+            console.log('\n✅ Copia completata.');
+        } else {
+            console.log('\n⏭️ Copia annullata.');
+        }
+        rl.close();
+    });
+} else {
+    rl.close();
+}
