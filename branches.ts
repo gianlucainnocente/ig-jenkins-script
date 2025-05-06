@@ -131,6 +131,17 @@ export const modules = [
         "autoapprove": true
     },
     {
+        "name": "ib_flutter_lib_a11y_utils",
+        "namespace": "nib",
+        "branches": [
+            polizzeBranch,
+        ],
+        "parallelGroup": 1,
+        "gitlabProjectId": "16898",
+        "jenkinsJob": "flutter_lib",
+        "autoapprove": true
+    },
+    {
         "name": "ib_flutter_feature_keyhole",
         "namespace": "nib",
         "branches": [
@@ -306,6 +317,17 @@ export const modules = [
         "namespace": "nib",
         "branches": [
             stream23Branch,
+        ],
+        "parallelGroup": 3,
+        "gitlabProjectId": "16896",
+        "jenkinsJob": "flutter_app",
+        "autoapprove": true
+    },
+    {
+        "name": "ib_flutter_app_banca",
+        "namespace": "nib",
+        "branches": [
+            polizzeBranch,
         ],
         "parallelGroup": 3,
         "gitlabProjectId": "16896",
