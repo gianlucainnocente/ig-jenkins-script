@@ -4,29 +4,26 @@ import * as crypto from 'crypto';
 import * as readline from 'readline';
 import { appBancaDir } from './constants';
 
-// Percorsi delle directory
 const dir1: string = path.join(appBancaDir, 'assets/flutter_i18n/it');
 const dir2: string = path.join(appBancaDir, 'bridge/assets/flutter_i18n/it');
 
-// Simboli Unicode per la leggibilità
-const CHECK = '✅';  // Verde - tutto ok
-const CROSS = '❌';  // Rosso - errore
-const WARNING = '⚠️'; // Giallo - avviso
-const DOT = '🔹';  // Punto elenco per file
+const CHECK = '✅';
+const CROSS = '❌';
+const WARNING = '⚠️';
+const DOT = '🔹';
 
-// Funzione per ottenere l'hash di un file
+type FileCheckResult = { file: string, keysWithMultipleValues: string[] };
+type JsonValidityResult = { file: string, valid: boolean, error?: string };
+
 const getFileHash = (filePath: string): string => {
     const fileBuffer = fs.readFileSync(filePath);
-    const hash = crypto.createHash('sha256');
-    hash.update(fileBuffer);
-    return hash.digest('hex');
+    return crypto.createHash('sha256').update(fileBuffer).digest('hex');
 };
 
-// Funzione per ottenere una lista ricorsiva dei file in una directory
 const getAllFiles = (dir: string): string[] => {
     let files: string[] = [];
-    fs.readdirSync(dir).forEach((file: string) => {
-        const filePath: string = path.join(dir, file);
+    fs.readdirSync(dir).forEach(file => {
+        const filePath = path.join(dir, file);
         if (fs.statSync(filePath).isDirectory()) {
             files = files.concat(getAllFiles(filePath));
         } else {
@@ -36,15 +33,8 @@ const getAllFiles = (dir: string): string[] => {
     return files;
 };
 
-// Recupera tutti i file JSON presenti nella directory principale
-type FileCheckResult = { file: string, keysWithMultipleValues: string[] };
-const checkJsonFiles = (baseDir: string): FileCheckResult[] => {
+const checkJsonUniqueness = (baseDir: string): FileCheckResult[] => {
     const jsonFiles = fs.readdirSync(baseDir).filter(file => file.endsWith('.json'));
-    if (jsonFiles.length === 0) {
-        console.error(`${CROSS} Errore: Nessun file JSON trovato in ${baseDir}.`);
-        process.exit(1);
-    }
-
     return jsonFiles.map(file => {
         const filePath = path.join(baseDir, file);
         const rawData = fs.readFileSync(filePath, 'utf-8').trim().replace(/^﻿/, '');
@@ -56,48 +46,89 @@ const checkJsonFiles = (baseDir: string): FileCheckResult[] => {
             entries.push({ key: match[1], value: match[2] });
         }
 
-        const groupedEntries = new Map<string, Set<string>>();
+        const grouped = new Map<string, Set<string>>();
         entries.forEach(({ key, value }) => {
-            if (!groupedEntries.has(key)) {
-                groupedEntries.set(key, new Set());
-            }
-            groupedEntries.get(key)!.add(value);
+            if (!grouped.has(key)) grouped.set(key, new Set());
+            grouped.get(key)!.add(value);
         });
 
-        const keysWithMultipleValues: string[] = [];
-        groupedEntries.forEach((values, key) => {
-            if (values.size > 1) {
-                keysWithMultipleValues.push(key);
-            }
-        });
+        const keysWithMultipleValues = Array.from(grouped.entries())
+            .filter(([_, values]) => values.size > 1)
+            .map(([key]) => key);
 
         return { file, keysWithMultipleValues };
     });
 };
 
-// Esegue il controllo JSON sulla directory principale
-console.log(`\n📂 (1/2) Verifica delle chiavi presenti nei file JSON i18n della directory assets\n`);
-const jsonCheckResults = checkJsonFiles(dir1);
-jsonCheckResults.forEach(({ file, keysWithMultipleValues }) => {
-    console.log(`\n📂 Verifica file: ${file}`);
-    if (keysWithMultipleValues.length > 0) {
-        console.log(`${WARNING} Chiavi con più di un valore:`);
-        keysWithMultipleValues.forEach(key => console.log(`   - ${key}`));
-    } else {
-        console.log(`${CHECK} Nessuna chiave con più di un valore`);
-    }
-});
+const checkJsonValidity = (baseDir: string): JsonValidityResult[] => {
+    const jsonFiles = fs.readdirSync(baseDir).filter(file => file.endsWith('.json'));
+    return jsonFiles.map(file => {
+        const filePath = path.join(baseDir, file);
+        try {
+            const content = fs.readFileSync(filePath, 'utf-8').trim().replace(/^﻿/, '');
+            JSON.parse(content);
+            return { file, valid: true };
+        } catch (e: any) {
+            return { file, valid: false, error: e.message };
+        }
+    });
+};
 
-// Esegue il confronto tra le directory
-console.log(`\n📂 (2/2) Verifica dei file JSON i18n tra le directory assets e bridge/assets\n`);
-const files1: string[] = getAllFiles(dir1).map((file: string) => path.relative(dir1, file));
-const files2: string[] = getAllFiles(dir2).map((file: string) => path.relative(dir2, file));
-const onlyInDir1: string[] = files1.filter(file => !files2.includes(file));
-const onlyInDir2: string[] = files2.filter(file => !files1.includes(file));
-const commonFiles: string[] = files1.filter(file => files2.includes(file));
-const differentContentFiles: string[] = commonFiles.filter(file => {
-    return getFileHash(path.join(dir1, file)) !== getFileHash(path.join(dir2, file));
-});
+// === STEP 1/3: Unicità dei valori per chiave ===
+console.log(`\n📂 (1/3) Verifica unicità dei valori per chiave nei file JSON\n`);
+const uniquenessResults = checkJsonUniqueness(dir1);
+const passed = uniquenessResults.filter(res => res.keysWithMultipleValues.length === 0);
+const failed = uniquenessResults.filter(res => res.keysWithMultipleValues.length > 0);
+
+console.log(`${CHECK} File che passano il controllo (${passed.length}):`);
+passed.forEach(res => console.log(`  ${DOT} ${res.file}`));
+
+if (failed.length > 0) {
+    console.log(`\n${WARNING} File che NON passano il controllo (${failed.length}):`);
+    failed.forEach(res => {
+        console.log(`  ${DOT} ${res.file}`);
+        res.keysWithMultipleValues.forEach(key => {
+            console.log(`     - Chiave con più valori: ${key}`);
+        });
+    });
+}
+
+// === STEP 2/3: Validità del formato JSON ===
+console.log(`\n📂 (2/3) Verifica validità formato JSON\n`);
+const validityResults = checkJsonValidity(dir1);
+const validJsonFiles = validityResults.filter(res => res.valid);
+const invalidJsonFiles = validityResults.filter(res => !res.valid);
+
+console.log(`${CHECK} File JSON validi (${validJsonFiles.length}):`);
+validJsonFiles.forEach(res => console.log(`  ${DOT} ${res.file}`));
+
+if (invalidJsonFiles.length > 0) {
+    console.log(`\n${CROSS} File JSON non validi (${invalidJsonFiles.length}):`);
+    invalidJsonFiles.forEach(res => {
+        console.log(`  ${DOT} ${res.file}`);
+        console.log(`     - Errore: ${res.error}`);
+    });
+}
+
+// === BLOCCO se errori trovati ===
+if (failed.length > 0 || invalidJsonFiles.length > 0) {
+    console.log(`\n${CROSS} Sono stati trovati errori nei passaggi precedenti.`);
+    console.log(`❗ Correggere i file prima di procedere al confronto tra le directory.`);
+    process.exit(1);
+}
+
+// === STEP 3/3: Confronto directory ===
+console.log(`\n📂 (3/3) Confronto dei file JSON tra assets e bridge/assets\n`);
+
+const files1 = getAllFiles(dir1).map(file => path.relative(dir1, file));
+const files2 = getAllFiles(dir2).map(file => path.relative(dir2, file));
+
+const onlyInDir1 = files1.filter(file => !files2.includes(file));
+const onlyInDir2 = files2.filter(file => !files1.includes(file));
+const commonFiles = files1.filter(file => files2.includes(file));
+const differentContent = commonFiles.filter(file =>
+    getFileHash(path.join(dir1, file)) !== getFileHash(path.join(dir2, file))
+);
 
 if (onlyInDir1.length > 0) {
     console.log(`${CROSS} File presenti solo in ${dir1}:`);
@@ -113,31 +144,27 @@ if (onlyInDir2.length > 0) {
     console.log(`${CHECK} Nessun file mancante in ${dir2}`);
 }
 
-if (differentContentFiles.length > 0) {
-    console.log(`${WARNING} File JSON con contenuto diverso:`);
-    differentContentFiles.forEach(file => console.log(`  ${DOT} ${file}`));
+if (differentContent.length > 0) {
+    console.log(`${WARNING} File con contenuti diversi:`);
+    differentContent.forEach(file => console.log(`  ${DOT} ${file}`));
 } else {
-    console.log(`${CHECK} Nessuna differenza nei contenuti dei file comuni.`);
+    console.log(`${CHECK} Nessuna differenza nei contenuti dei file comuni`);
 }
 
-console.log(`\n🔍 Verifica completata!\n`);
-
-// Chiede se si vogliono copiare i file diversi
+// === Copia dei file solo se tutto ok ===
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
-const filesToCopy = [...onlyInDir1, ...differentContentFiles];
-
+const filesToCopy = [...onlyInDir1, ...differentContent];
 if (filesToCopy.length > 0) {
-    rl.question('📥 Vuoi copiare i file diversi da dir1 a dir2? (s/n): ', (answer) => {
+    rl.question('\n📥 Vuoi copiare i file diversi da dir1 a dir2? (s/n): ', (answer) => {
         if (answer.trim().toLowerCase() === 's') {
             filesToCopy.forEach(file => {
                 const srcPath = path.join(dir1, file);
                 const destPath = path.join(dir2, file);
-                const destDir = path.dirname(destPath);
-                fs.mkdirSync(destDir, { recursive: true });
+                fs.mkdirSync(path.dirname(destPath), { recursive: true });
                 fs.copyFileSync(srcPath, destPath);
                 console.log(`${CHECK} Copiato: ${file}`);
             });
