@@ -4,14 +4,17 @@ import * as crypto from 'crypto';
 import * as readline from 'readline';
 import { appBancaDir } from './constants';
 
+// Percorsi delle directory
 const dir1: string = path.join(appBancaDir, 'assets/flutter_i18n/it');
 const dir2: string = path.join(appBancaDir, 'bridge/assets/flutter_i18n/it');
 
-const CHECK = '✅';
-const CROSS = '❌';
-const WARNING = '⚠️';
-const DOT = '🔹';
+// Simboli Unicode per la leggibilità
+const CHECK = '✅';  // Verde - tutto ok
+const CROSS = '❌';  // Rosso - errore
+const WARNING = '⚠️'; // Giallo - avviso
+const DOT = '🔹';  // Punto elenco per file
 
+// Funzione per ottenere l'hash di un file
 type FileCheckResult = { file: string, keysWithMultipleValues: string[] };
 type JsonValidityResult = { file: string, valid: boolean, error?: string };
 
@@ -20,6 +23,7 @@ const getFileHash = (filePath: string): string => {
     return crypto.createHash('sha256').update(fileBuffer).digest('hex');
 };
 
+// Funzione per ottenere una lista ricorsiva dei file in una directory
 const getAllFiles = (dir: string): string[] => {
     let files: string[] = [];
     fs.readdirSync(dir).forEach(file => {
@@ -77,37 +81,33 @@ const checkJsonValidity = (baseDir: string): JsonValidityResult[] => {
 // === STEP 1/3: Unicità dei valori per chiave ===
 console.log(`\n📂 (1/3) Verifica unicità dei valori per chiave nei file JSON\n`);
 const uniquenessResults = checkJsonUniqueness(dir1);
-const passed = uniquenessResults.filter(res => res.keysWithMultipleValues.length === 0);
 const failed = uniquenessResults.filter(res => res.keysWithMultipleValues.length > 0);
 
-console.log(`${CHECK} File che passano il controllo (${passed.length}):`);
-passed.forEach(res => console.log(`  ${DOT} ${res.file}`));
-
 if (failed.length > 0) {
-    console.log(`\n${WARNING} File che NON passano il controllo (${failed.length}):`);
+    console.log(`${WARNING} File che NON passano il controllo (${failed.length}):`);
     failed.forEach(res => {
         console.log(`  ${DOT} ${res.file}`);
         res.keysWithMultipleValues.forEach(key => {
             console.log(`     - Chiave con più valori: ${key}`);
         });
     });
+} else {
+    console.log(`${CHECK} Tutti i file hanno valori univoci per ogni chiave.`);
 }
 
 // === STEP 2/3: Validità del formato JSON ===
 console.log(`\n📂 (2/3) Verifica validità formato JSON\n`);
 const validityResults = checkJsonValidity(dir1);
-const validJsonFiles = validityResults.filter(res => res.valid);
 const invalidJsonFiles = validityResults.filter(res => !res.valid);
 
-console.log(`${CHECK} File JSON validi (${validJsonFiles.length}):`);
-validJsonFiles.forEach(res => console.log(`  ${DOT} ${res.file}`));
-
 if (invalidJsonFiles.length > 0) {
-    console.log(`\n${CROSS} File JSON non validi (${invalidJsonFiles.length}):`);
+    console.log(`${CROSS} File JSON non validi (${invalidJsonFiles.length}):`);
     invalidJsonFiles.forEach(res => {
         console.log(`  ${DOT} ${res.file}`);
         console.log(`     - Errore: ${res.error}`);
     });
+} else {
+    console.log(`${CHECK} Tutti i file JSON sono validi.`);
 }
 
 // === BLOCCO se errori trovati ===
