@@ -513,25 +513,47 @@ async function doSetVersions() {
 
         let newVersion = '';
         if (module.name === 'ib_flutter_app_banca') {
-            // 12407.0.11+12407011
-            let currentYear = new Date().getFullYear().toString();
-            let currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
-            let lastVersion = currentVersion.split('+')[0];
-            let lastVersionParts = lastVersion.split('.');
-            let incremental = parseInt(lastVersionParts[2]);
-            let newPrefix = `1${currentYear.substring(2, 4)}${currentMonth}`;
+            let responseIncrMode = await prompt.get({
+                description: 'Quale tipologia di incremento della versione di app_banca?\n1 - Incremento versione in base al mese corrente\n2 - Incremento ultima versione usata'
+            });
 
-            console.log(`doSetVersions ${module.name} - currentYear: ${currentYear} - currentMonth: ${currentMonth}`);
-            console.log(`doSetVersions ${module.name} - lastVersion: ${lastVersion} - lastVersionParts: ${lastVersionParts} - incremental: ${incremental} - newPrefix: ${newPrefix}`);
+            if (responseIncrMode.question == '1') {
+                // 12407.0.11+12407011
+                let currentYear = new Date().getFullYear().toString();
+                let currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+                let lastVersion = currentVersion.split('+')[0];
+                let lastVersionParts = lastVersion.split('.');
+                let incremental = parseInt(lastVersionParts[2]);
+                let newPrefix = `1${currentYear.substring(2, 4)}${currentMonth}`;
 
-            if (newPrefix !== lastVersionParts[0]) {
-                incremental = 1;
+                console.log(`doSetVersions ${module.name} - currentYear: ${currentYear} - currentMonth: ${currentMonth}`);
+                console.log(`doSetVersions ${module.name} - lastVersion: ${lastVersion} - lastVersionParts: ${lastVersionParts} - incremental: ${incremental} - newPrefix: ${newPrefix}`);
+
+                if (newPrefix !== lastVersionParts[0]) {
+                    incremental = 1;
+                } else {
+                    incremental++;
+                }
+
+                newVersion = `${newPrefix}.0.${incremental}+${newPrefix}${incremental.toString().padStart(3, '0')}`;
+                appBancaVersion = newVersion;
+            } else if (responseIncrMode.question == '2') {
+                // Esempio: currentVersion = "12407.0.11+12407011"
+                let lastVersion = currentVersion.split('+')[0];
+                let lastVersionParts = lastVersion.split('.');
+                let prefix = lastVersionParts[0];  // 12407
+                let incremental = parseInt(lastVersionParts[2]); // 11
+
+                incremental++; // incrementa semplicemente
+
+                newVersion = `${prefix}.0.${incremental}+${prefix}${incremental.toString().padStart(3, '0')}`;
+                appBancaVersion = newVersion;
+
+                console.log(`doSetVersions ${module.name} - lastVersion: ${lastVersion} - prefix: ${prefix} - incremental: ${incremental} - newVersion: ${newVersion}`);
             } else {
-                incremental++;
+                console.error("Scelta non valida. Usa 1 o 2.");
+                return;
             }
-
-            newVersion = `${newPrefix}.0.${incremental}+${newPrefix}${incremental.toString().padStart(3, '0')}`;
-            appBancaVersion = newVersion;
         } else if (module.name == 'cross_flutter_libarch_uicomponents') {
             newVersion = crossUiVersion;
         } else if (module.name == 'cross_flutter_libarch_shared') {
