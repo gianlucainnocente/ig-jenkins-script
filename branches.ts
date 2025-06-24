@@ -2,7 +2,6 @@
 Aggiornare eventualmente il branch MVP
  */
 export const stream23Branch = 'feature/267557_267558_267560';
-export const areaPersonaleBranch = 'feature/242909_230387_242908';
 export const polizzeBranch = 'feature/258251_258255_258256';
 
 export const rewardingBranch = 'feature/259787_259788_259789';
@@ -120,17 +119,6 @@ export const modules = [
         "commitBeforeCheckOut": true
     },
     {
-        "name": "ib_flutter_lib_a11y_utils",
-        "namespace": "nib",
-        "branches": [
-            areaPersonaleBranch,
-        ],
-        "parallelGroup": 1,
-        "gitlabProjectId": "16898",
-        "jenkinsJob": "flutter_lib",
-        "autoapprove": true
-    },
-    {
         "name": "ib_flutter_feature_keyhole",
         "namespace": "nib",
         "branches": [
@@ -235,19 +223,7 @@ export const modules = [
         "gitlabProjectId": "18847",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
-    },
-    {
-        "name": "ib_flutter_feature_areapersonale",
-        "namespace": "nib",
-        "branches": [
-            areaPersonaleBranch,
-        ],
-        "parallelGroup": 2,
-        "gitlabProjectId": "19214",
-        "jenkinsJob": "flutter_lib",
-        "autoapprove": true,
-        "commitBeforeCheckOut": true
-    },
+    }
     {
         "name": "ib_flutter_feature_areapersonale",
         "namespace": "nib",
