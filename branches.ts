@@ -223,7 +223,7 @@ export const modules = [
         "gitlabProjectId": "18847",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
-    }
+    },
     {
         "name": "ib_flutter_feature_areapersonale",
         "namespace": "nib",
