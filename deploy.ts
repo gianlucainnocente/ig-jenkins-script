@@ -62,6 +62,7 @@ async function deploy() {
     let executeMergeTo;
     let executeAppBancaMergeFrom;
     let executeAppBancaMergeTo;
+    let mergeModuleList: string[] = [];
 
     try {
         let jsonRunningJobs = fs.readFileSync(runnngJobsPath);
@@ -103,6 +104,7 @@ async function deploy() {
             executeMergeTo = stream23Branch;
             executeAppBancaMergeFrom = 'preproduzione_produzione';
             executeAppBancaMergeTo = stream23Branch;
+            mergeModuleList = deloitteModulesToCreateBranch;
         } else if (response.question == '3') {
             mode = 'branch1ToBranch2';
             executeGenerate = false;
@@ -111,6 +113,7 @@ async function deploy() {
             executeMergeTo = 'develop';
             executeAppBancaMergeFrom = 'preproduzione_produzione';
             executeAppBancaMergeTo = 'systemtest';
+            mergeModuleList = deloitteModulesToMerge;
         }  else if (response.question == '6') {
             mode = 'createAndApproveMergeRequests';
             executeGenerate = false;
@@ -286,7 +289,7 @@ async function deploy() {
             await prompt.get({
                 description: 'Si sta per effettuare un merge. Premi un tasto per proseguire.'
             });
-            for (let module of deloitteModulesToMerge) {
+            for (let module of mergeModuleList) {
                 process.chdir('../' + module);
                 console.log(`doMergeAndPush ${module} - move to folder ${process.cwd()}`);
 
