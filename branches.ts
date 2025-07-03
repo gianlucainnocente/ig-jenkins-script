@@ -2,6 +2,7 @@
 Aggiornare eventualmente il branch MVP
  */
 export const stream23Branch = 'feature/268960_268961_268962';
+
 export const polizzeBranch = 'feature/258251_258255_258256';
 
 export const rewardingBranch = 'feature/259787_259788_259789';
@@ -16,6 +17,7 @@ export const deloitteModules = [
     'ib_flutter_feature_bonifici',
     'ib_flutter_feature_tributi',
     'ib_flutter_feature_conti',
+    'ib_flutter_feature_carte',
     'ib_flutter_feature_ricariche',
     'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
@@ -33,6 +35,7 @@ export const deloitteModulesToMerge = [
     'ib_flutter_feature_bonifici',
     'ib_flutter_feature_tributi',
     'ib_flutter_feature_conti',
+    'ib_flutter_feature_carte',
     'ib_flutter_feature_ricariche',
     'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
@@ -50,6 +53,7 @@ export const deloitteModulesToCreateBranch = [
     'ib_flutter_feature_bonifici',
     'ib_flutter_feature_tributi',
     'ib_flutter_feature_conti',
+    'ib_flutter_feature_carte',
     'ib_flutter_feature_ricariche',
     'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
@@ -65,6 +69,7 @@ export const productionModules = [
     'ib_flutter_feature_bonifici',
     'ib_flutter_feature_tributi',
     'ib_flutter_feature_conti',
+    'ib_flutter_feature_carte',
     'ib_flutter_feature_ricariche',
     'ib_flutter_feature_homepage',
     'ib_flutter_feature_polizze',
@@ -184,16 +189,18 @@ export const modules = [
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
-    /*{
+    {
         "name": "ib_flutter_feature_carte",
         "namespace": "nib",
-        "branches": carteBranches,
+        "branches": [
+            stream23Branch,
+        ],
         "parallelGroup": 2,
         "gitlabProjectId": "17220",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
-    {
+    /*{
         "name": "ib_flutter_feature_trading",
         "namespace": "nib",
         "branches": tradingBranches,
