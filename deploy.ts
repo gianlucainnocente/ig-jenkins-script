@@ -517,29 +517,44 @@ async function doSetVersions() {
         let newVersion = '';
         if (module.name === 'ib_flutter_app_banca') {
             let responseIncrMode = await prompt.get({
-                description: 'Quale tipologia di incremento della versione di app_banca?\n1 - Incremento versione in base al mese corrente\n2 - Incremento ultima versione usata'
+                description: 'Quale tipologia di incremento della versione di app_banca?\n1 - Prefisso manuale della versione (es. 12407)\n2 - Incremento ultima versione usata'
             });
 
             if (responseIncrMode.question == '1') {
-                // 12407.0.11+12407011
-                let currentYear = new Date().getFullYear().toString();
-                let currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
-                let lastVersion = currentVersion.split('+')[0];
-                let lastVersionParts = lastVersion.split('.');
-                let incremental = parseInt(lastVersionParts[2]);
-                let newPrefix = `1${currentYear.substring(2, 4)}${currentMonth}`;
+                const responsePrefix = await prompt.get({
+                    name: 'prefix',
+                    description: 'Prefisso versione (es. 12407):'
+                });
 
-                console.log(`doSetVersions ${module.name} - currentYear: ${currentYear} - currentMonth: ${currentMonth}`);
-                console.log(`doSetVersions ${module.name} - lastVersion: ${lastVersion} - lastVersionParts: ${lastVersionParts} - incremental: ${incremental} - newPrefix: ${newPrefix}`);
+                const newPrefix = ((responsePrefix as any).prefix as string).trim();
 
-                if (newPrefix !== lastVersionParts[0]) {
-                    incremental = 1;
-                } else {
-                    incremental++;
+                if (!/^\d{5}$/.test(newPrefix)) {
+                    console.error("Prefisso non valido. Deve essere numerico e di 5 cifre (es. 12407).");
+                    return;
                 }
 
-                newVersion = `${newPrefix}.0.${incremental}+${newPrefix}${incremental.toString().padStart(3, '0')}`;
+                const incremental = 1;
+
+                const proposedVersion = `${newPrefix}.0.${incremental}+${newPrefix}${incremental.toString().padStart(3, '0')}`;
+
+                console.log(`La versione proposta è: ${proposedVersion}`);
+
+                const confirmResponse = await prompt.get({
+                    name: 'confirm',
+                    description: `Confermi l'impostazione della versione ${proposedVersion}? (s/n):`
+                });
+
+                const confirm = (confirmResponse as any).confirm as string;
+
+                if (confirm.toLowerCase() !== 's') {
+                    console.log("Operazione annullata dall'utente.");
+                    return;
+                }
+
+                newVersion = proposedVersion;
                 appBancaVersion = newVersion;
+
+                console.log(`doSetVersions ${module.name} - manualPrefix: ${newPrefix} - newVersion: ${newVersion}`);
             } else if (responseIncrMode.question == '2') {
                 // Esempio: currentVersion = "12407.0.11+12407011"
                 let lastVersion = currentVersion.split('+')[0];
