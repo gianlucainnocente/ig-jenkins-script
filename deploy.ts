@@ -373,11 +373,11 @@ async function createBranches() {
         }
 
 
-        //let newBranch = 'feature/267557_267558_267560';
-        //let sourceBranch = 'feature/265384_264263_264264';
+        //let newBranch = 'feature/268960_268961_268962';
+        //let sourceBranch = 'feature/267557_267558_267560';
 
-        let newBranch = 'feature/268960_268961_268962';
-        let sourceBranch = 'feature/267557_267558_267560';
+        let newBranch = 'feature/270391_270393_270395';
+        let sourceBranch = 'feature/268960_268961_268962';
 
 
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/repository/branches?private_token=${gitlabToken}&branch=${newBranch}&ref=${sourceBranch}`;
