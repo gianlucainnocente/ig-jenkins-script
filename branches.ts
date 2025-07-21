@@ -5,7 +5,7 @@ export const stream23Branch = 'feature/270391_270393_270395';
 
 export const polizzeBranch = 'feature/258251_258255_258256';
 
-export const rewardingBranch = 'feature/259787_259788_259789';
+export const rewardingBranch = 'feature/259787_259789_259788';
 
 export const areaDocumentiBranch = 'feature/270391_270393_270395';
 
