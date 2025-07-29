@@ -6,7 +6,7 @@ ISTRUZIONI PER L'USO
  */
 
 import Jenkins from "jenkins";
-import simpleGit, { ResetMode, SimpleGit } from "simple-git";
+import simpleGit, {ResetMode, SimpleGit} from "simple-git";
 import prompt from "prompt";
 import fs from "fs";
 import * as util from "node:util";
@@ -18,7 +18,14 @@ import {
     jenkinsUsername,
     operatingSystem,
 } from "./constants";
-import {deloitteModules, deloitteModulesToMerge, deloitteModulesToCreateBranch, modules, productionModules, stream23Branch} from "./branches";
+import {
+    deloitteModules,
+    deloitteModulesToMerge,
+    deloitteModulesToCreateBranch,
+    modules,
+    productionModules,
+    stream23Branch
+} from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -114,7 +121,7 @@ async function deploy() {
             executeAppBancaMergeFrom = 'preproduzione_produzione';
             executeAppBancaMergeTo = 'systemtest';
             mergeModuleList = deloitteModulesToMerge;
-        }  else if (response.question == '6') {
+        } else if (response.question == '6') {
             mode = 'createAndApproveMergeRequests';
             executeGenerate = false;
             executeTests = false;
@@ -501,8 +508,8 @@ async function doResetRemoteDependencies() {
 }
 
 async function doSetVersions() {
-    let crossUiVersion = await retrieveLastModuleVersion('cross_flutter_libarch_uicomponents');
-    let crossSharedVersion = await retrieveLastModuleVersion('cross_flutter_libarch_shared');
+    let crossUiVersion = await retrieveLastModuleVersionNew('cross_flutter_libarch_uicomponents');
+    let crossSharedVersion = await retrieveLastModuleVersionNew('cross_flutter_libarch_shared');
 
     let newVersions: any = {};
     let currentVersions: any = {};
@@ -511,7 +518,14 @@ async function doSetVersions() {
         await git.reset(ResetMode.HARD);
         await git.checkout(module.branches[module.branches.length - 1]);
         let buffer = fs.readFileSync(`${process.cwd()}/pubspec.yaml`);
-        let currentVersion = getPubspecVersion(buffer.toString());
+        let currentVersion = '';
+        if (module.name === 'ib_flutter_app_banca') {
+            currentVersion = getPubspecVersion(buffer.toString());
+        } else {
+            currentVersion = await retrieveLastModuleVersionNew(module.name);
+
+        }
+
         console.log(`doSetVersions ${module.name} - pubspec.yaml version: ${currentVersion}`);
 
         let newVersion = '';
@@ -946,13 +960,11 @@ function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function retrieveLastModuleVersion(module: string) {
+async function retrieveLastModuleVersionNew(module: string) {
     const indexPage = await httpRequest('http://artifactory.gbm.lan:8080/artifactory/pub_local/' + module + '/', 'GET', {});
     console.log(`retrieveLastModuleVersion - indexPage: ${indexPage}`);
-    let versionRegex = /cross_flutter_libarch_uicomponents-(\d+\.\d+\.\d+(?:-SNAPSHOT)?)\.tar\.gz/g;
-    if (module === "cross_flutter_libarch_shared") {
-        versionRegex = /cross_flutter_libarch_shared-(\d+\.\d+\.\d+(?:-SNAPSHOT)?)\.tar\.gz/g;
-    }
+    let versionRegexString = `${module}-(\\d+\\.\\d+\\.\\d+(?:-SNAPSHOT)?)\\.tar\\.gz`;
+    let versionRegex = new RegExp(versionRegexString, 'g');
 
     const versions: string[] = [];
     let match;
@@ -968,9 +980,9 @@ async function retrieveLastModuleVersion(module: string) {
         return aParsed - bParsed;
     });
 
-    console.log(sortedVersions[sortedVersions.length - 1]);
     return sortedVersions[sortedVersions.length - 1];
 }
+
 
 /*retrieveLastModuleVersion('cross_flutter_libarch_uicomponents').then(r => {
     console.log(`retrieveLastModuleVersion - result: ${r}`);
