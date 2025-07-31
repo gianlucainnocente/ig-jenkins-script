@@ -537,19 +537,19 @@ async function doSetVersions() {
             if (responseIncrMode.question == '1') {
                 const responsePrefix = await prompt.get({
                     name: 'prefix',
-                    description: 'Prefisso versione (es. 12407):'
+                    description: 'Prefisso versione (es. 12507):'
                 });
 
                 const newPrefix = ((responsePrefix as any).prefix as string).trim();
 
                 if (!/^\d{5}$/.test(newPrefix)) {
-                    console.error("Prefisso non valido. Deve essere numerico e di 5 cifre (es. 12407).");
+                    console.error("Prefisso non valido. Deve essere numerico e di 5 cifre (es. 12507).");
                     return;
                 }
 
                 const incremental = 1;
 
-                const proposedVersion = `${newPrefix}.0.${incremental}+${newPrefix}${incremental.toString().padStart(3, '0')}`;
+                const proposedVersion = `${newPrefix}.0.${incremental}+${newPrefix}${incremental.toString().padStart(4, '0')}`;
 
                 console.log(`La versione proposta è: ${proposedVersion}`);
 
@@ -596,7 +596,8 @@ async function doSetVersions() {
         }
 
         console.log(`doSetVersions ${module.name} - new version: ${newVersion}`);
-        let newContent = buffer.toString().replace(`version: ${currentVersion}`, `version: ${newVersion}`);
+        let pubspecVersion = getPubspecVersion(buffer.toString());
+        let newContent = buffer.toString().replace(`version: ${pubspecVersion}`, `version: ${newVersion}`);
         if (module.autoapprove) {
             fs.writeFile(`${process.cwd()}/pubspec.yaml`, newContent, 'utf8', function (err) {
                 if (err) return console.log(err);
