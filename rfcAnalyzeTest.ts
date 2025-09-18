@@ -15,6 +15,33 @@ simpleGit().env({
 const git: SimpleGit = simpleGit('./')
 prompt.start();
 
+
+async function updateMaster(): Promise<void> {
+    const logPrefix = '[updateMaster] -';
+    let currentModule = '';
+    try {
+        for (const module of modules) {
+            currentModule = module.name;
+            process.chdir('../' + module.name);
+
+            let branchToUpdate = 'master';
+
+            if (currentModule === 'ib_flutter_app_banca') {
+                branchToUpdate = 'preproduzione_produzione';
+            }
+
+            console.log(`${logPrefix} module ${module.name}`);
+
+            await git.fetch();
+            await git.checkout(branchToUpdate);
+            await git.pull(module.name);
+        }
+    } catch (e) {
+        console.log(`${logPrefix} Error for ${currentModule}: ${e}`);
+        process.exit();
+    }
+}
+
 async function run(): Promise<void> {
     const logPrefix = '[run] -';
     await prompt.get({
@@ -24,6 +51,8 @@ async function run(): Promise<void> {
     process.chdir(appBancaMasterDir)
 
     for (const rfc of rfcToUpdate) {
+        await updateMaster();
+
         for (const module of modules) {
             process.chdir('../' + module.name);
 
@@ -55,7 +84,7 @@ async function run(): Promise<void> {
         const responseAnalyze = await prompt.get({
             description: `${logPrefix} Puntamenti locali impostati per l'RFC ${rfc}. Vuoi eseguire l'analyze?\n1 - Si\n2 - No`,
         });
-        if (responseAnalyze.description === '1') {
+        if (responseAnalyze.question.toString() == '1') {
             await doFlutterAnalyze();
         }
 
@@ -63,7 +92,7 @@ async function run(): Promise<void> {
             description: `${logPrefix} Vuoi eseguire i test?\n1 - Si\n2 - No`,
         });
 
-        if (responseTest.description === '1') {
+        if (responseTest.question.toString() == '1') {
             await doFlutterTest();
         }
 
@@ -83,6 +112,7 @@ async function doFlutterAnalyze(): Promise<void> {
             console.log(`${logPrefix} Starting flutter analyze in module ${module.name}...`);
 
             try {
+                await exec('flutter pub run build_runner build --delete-conflicting-outputs');
                 const {stdout, stderr} = await exec('flutter analyze');
 
                 if (stdout) {
