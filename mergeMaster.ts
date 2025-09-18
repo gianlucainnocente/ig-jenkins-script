@@ -123,9 +123,10 @@ function getCommitMessage(branch: string): string {
 }
 
 function normalizeBranchName(branchName: string): string {
-    return branchName.startsWith('remotes/origin/')
-        ? branchName.replace(/^remotes\/origin\//, '')
-        : branchName;
+    const branch = branchName.replace(/origin_[^/]+/, "origin");
+    return (branch.startsWith('remotes/origin/')
+        ? branch.replace(/^remotes\/origin\//, '')
+        : branch);
 }
 
 void run();
