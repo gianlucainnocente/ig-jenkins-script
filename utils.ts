@@ -11,4 +11,13 @@ export class Utils {
             ? branch.replace(/^remotes\/origin\//, '')
             : branch);
     }
+
+    static getCommitMessage(branch: string, message: string): string {
+        let rfc = branch.split('/')[1];
+        if (!/\d/.test(rfc)) {
+            rfc = '999999';
+        }
+        return `refs #${rfc} - ${message}`;
+    }
+
 }
