@@ -24,7 +24,7 @@ import {
     deloitteModulesToCreateBranch,
     modules,
     productionModules,
-    stream23Branch
+    delDevPipe
 } from "./branches";
 
 const exec = util.promisify(require('child_process').exec);
@@ -37,6 +37,7 @@ let jenkinsBuildNumbers: any = {};
 let runnngJobsPath = __dirname + '/runningJobs.json';
 let commitsPath = __dirname + '/commits.json';
 let mergeRequestsPath = __dirname + '/mergeRequests.json';
+const moduleVersionsPath = __dirname + '/moduleVersions.json';
 
 simpleGit().env({
     GIT_AUTHOR_NAME: gitlabName,
@@ -108,9 +109,9 @@ async function deploy() {
             executeGenerate = false;
             executeTests = false;
             executeMergeFrom = 'master';
-            executeMergeTo = stream23Branch;
+            executeMergeTo = delDevPipe;
             executeAppBancaMergeFrom = 'preproduzione_produzione';
-            executeAppBancaMergeTo = stream23Branch;
+            executeAppBancaMergeTo = delDevPipe;
             mergeModuleList = deloitteModulesToCreateBranch;
         } else if (response.question == '3') {
             mode = 'branch1ToBranch2';
@@ -343,6 +344,9 @@ async function deploy() {
                         let rfc;
                         if (targetBranchTo.includes('/')) {
                             rfc = targetBranchTo.split('/')[1];
+                            if (!/\d/.test(rfc)) {
+                                rfc = '999999';
+                            }
                         } else {
                             rfc = '999999';
                         }
@@ -422,6 +426,9 @@ async function doMergeAndPush(fixFormatEachBranch: boolean = false) {
                 await git.add('.');
 
                 let rfc = branch.split('/')[1];
+                if (!/\d/.test(rfc)) {
+                    rfc = '999999';
+                }
                 await git.commit(`refs #${rfc} - Analyze fix`);
 
                 console.log(`doFormatAndFix ${module.name} - pushing changes`);
@@ -457,6 +464,9 @@ async function doMergeAndPush(fixFormatEachBranch: boolean = false) {
                     });
 
                     let rfc = intoMergeBranch.split('/')[1];
+                    if (!/\d/.test(rfc)) {
+                        rfc = '999999';
+                    }
                     await git.commit(`refs #${rfc} - conflict fix`);
                 }
             } while (!mergeOK);
@@ -524,6 +534,23 @@ async function doSetVersions() {
         } else {
             currentVersion = await retrieveLastModuleVersionNew(module.name);
 
+        }
+
+        try {
+            if (!fs.existsSync(moduleVersionsPath)) {
+                fs.writeFileSync(moduleVersionsPath, '{}', 'utf8');
+            }
+            let moduleVersionBuffer = fs.readFileSync(moduleVersionsPath);
+            let moduleVersions = JSON.parse(moduleVersionBuffer.toString() || '{}');
+
+            let numberVersion = currentVersion.replace('0.0.', '').replace('-SNAPSHOT', '');
+            moduleVersions[module.name] = `0.0.${parseInt(numberVersion) + 1}-SNAPSHOT`;
+
+            fs.writeFile(moduleVersionsPath, JSON.stringify(moduleVersions, null, 2), 'utf8', (err) => {
+                if (err) console.error(`Simo - doSetVersions - Error writing module versions to file: ${err}`);
+            });
+        } catch (e) {
+            console.error(`Simo - doSetVersions - Error writing module versions to file: ${e}`);
         }
 
         console.log(`doSetVersions ${module.name} - pubspec.yaml version: ${currentVersion}`);
@@ -631,6 +658,9 @@ async function doSetVersions() {
         if (module?.commitBeforeCheckOut == true) {
             await git.add('.');
             let rfc = module.branches[module.branches.length - 1].split('/')[1];
+            if (!/\d/.test(rfc)) {
+                rfc = '999999';
+            }
             let commitResult = await git.commit(`refs #${rfc} - Version`);
             //commits[module.name] = commitResult.commit;
         }
@@ -659,6 +689,9 @@ async function doSetVersions() {
         if (module?.commitBeforeCheckOut == true) {
             await git.add('.');
             let rfc = module.branches[module.branches.length - 1].split('/')[1];
+            if (!/\d/.test(rfc)) {
+                rfc = '999999';
+            }
             let commitResult = await git.commit(`refs #${rfc} - Version`);
             //commits[module.name] = commitResult.commit;
         }
@@ -674,6 +707,10 @@ async function doPushAnalyzeFixes() {
 
         await git.add('.');
         let rfc = module.branches[module.branches.length - 1].split('/')[1];
+        console.log('doPushAnalyzeFixes - rfc:', rfc);
+        if (!/\d/.test(rfc)) {
+            rfc = '999999';
+        }
         let commitResult = await git.commit(`refs #${rfc} - Analyze fix`);
         commits[module.name] = commitResult.commit;
         await git.push();
@@ -691,6 +728,9 @@ async function doPushVersions() {
 
         await git.add('.');
         let rfc = module.branches[module.branches.length - 1].split('/')[1];
+        if (!/\d/.test(rfc)) {
+            rfc = '999999';
+        }
         let commitResult = await git.commit(`refs #${rfc} - Updated version and analyze`);
         commits[module.name] = commitResult.commit;
         await git.push();
@@ -706,6 +746,9 @@ async function doMergeRequests() {
         let url = `https://git.gbm.lan/api/v4/projects/${module.gitlabProjectId}/merge_requests?private_token=${gitlabToken}`;
         let sourceBranch = module.branches[module.branches.length - 1];
         let comment = sourceBranch.split('/')[1];
+        if (!/\d/.test(comment)) {
+            comment = '999999';
+        }
         let targetBranch = module.name === 'ib_flutter_app_banca' ? 'systemtest' : 'develop';
         let body = {
             "source_branch": sourceBranch,
