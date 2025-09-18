@@ -17,3 +17,5 @@ export const jenkinsToken = 'jenkins token';
 Impostare il percorso del proprio ib_flutter_app_banca locale
  */
 export const appBancaDir = 'app banca path';
+
+export const appBancaMasterDir = '../mediolanum-master/ib_flutter_app_banca';

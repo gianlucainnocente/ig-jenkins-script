@@ -2,10 +2,9 @@
   "name": "ig-jenkins-script",
   "version": "1.0.0",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only ./app.ts",
-    "start": "tsc && node ./app.js",
-    "oldpm2": "tsc && pm2 start process.json",
-    "pm2": "pm2 start ts-node -- -P tsconfig.json ./app.ts"
+    "deploy": "npx ts-node deploy.ts",
+    "mergeMaster": "npx ts-node mergeMaster.ts",
+    "i18n": "npx ts-node i18nJsonCheck.ts"
   },
   "dependencies": {
     "@types/ajv": "^1.0.0",
