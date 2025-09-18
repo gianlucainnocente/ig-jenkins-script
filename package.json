@@ -4,7 +4,8 @@
   "scripts": {
     "deploy": "npx ts-node deploy.ts",
     "mergeMaster": "npx ts-node mergeMaster.ts",
-    "i18n": "npx ts-node i18nJsonCheck.ts"
+    "i18n": "npx ts-node i18nJsonCheck.ts",
+    "rfcAnalyzeTest": "npx ts-node rfcAnalyzeTest.ts"
   },
   "dependencies": {
     "@types/ajv": "^1.0.0",

@@ -2,6 +2,7 @@ import simpleGit, {ResetMode, SimpleGit} from "simple-git";
 import {appBancaMasterDir, gitlabEmail, gitlabName} from "./constants";
 import prompt from "prompt";
 import {modules, rfcToUpdate} from "./branches";
+import {Utils} from "./utils";
 
 simpleGit().env({
     GIT_AUTHOR_NAME: gitlabName,
@@ -66,13 +67,13 @@ async function mergeMaster(): Promise<void> {
 
             const remotes = await git.getRemotes();
             const branches = await git.branch();
-            const targetBranchRaw = Object.keys(branches.branches).find(branchName => isValidBranch(branchName, rfc));
+            const targetBranchRaw = Object.keys(branches.branches).find(branchName => Utils.isValidRFCBranch(branchName, rfc));
             if (!targetBranchRaw) {
                 console.log(`${logPrefix} No valid branch found for rfc ${rfc} in module ${module.name}, skipping...`);
                 continue;
             }
 
-            const targetBranch = normalizeBranchName(targetBranchRaw);
+            const targetBranch = Utils.normalizeBranchName(targetBranchRaw);
 
             console.log(`${logPrefix} Checking out branch ${targetBranch}`);
             await git.reset(ResetMode.HARD);
@@ -108,25 +109,12 @@ async function mergeMaster(): Promise<void> {
     }
 }
 
-function isValidBranch(branchName: string, rfc: string): boolean {
-    return branchName.includes(rfc) &&
-        !branchName.includes('del-dev') &&
-        !branchName.includes('del-sys');
-}
-
 function getCommitMessage(branch: string): string {
     let rfc = branch.split('/')[1];
     if (!/\d/.test(rfc)) {
         rfc = '999999';
     }
     return `refs #${rfc} - conflict fix`;
-}
-
-function normalizeBranchName(branchName: string): string {
-    const branch = branchName.replace(/origin_[^/]+/, "origin");
-    return (branch.startsWith('remotes/origin/')
-        ? branch.replace(/^remotes\/origin\//, '')
-        : branch);
 }
 
 void run();
