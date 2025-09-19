@@ -1,7 +1,7 @@
 import simpleGit, {ResetMode, SimpleGit} from "simple-git";
 import {appBancaMasterDir, gitlabEmail, gitlabName, redmineToken, redmineUsername} from "./constants";
 import prompt from "prompt";
-import {deloitteModules, modules} from "./branches";
+import {productionModules, modules} from "./branches";
 import {Utils} from "./utils";
 import {Redmine, RedmineTS} from "redmine-ts";
 
@@ -35,7 +35,7 @@ async function updateMaster(): Promise<void> {
     const logPrefix = '[updateMaster] -';
     let currentModule = '';
     try {
-        for (const module of deloitteModules) {
+        for (const module of productionModules) {
             currentModule = module;
             process.chdir('../' + module);
 
@@ -91,7 +91,8 @@ async function mergeMaster(): Promise<void> {
             await git.checkout(targetBranch);
             await git.pull(remotes[0].name, targetBranch);
 
-            console.log(`${logPrefix} Merging ${branchFrom} into ${targetBranch}`);
+
+            console.log(`${logPrefix} Merging ${branchFrom} into ${branch}`);
 
             let mergeOK: boolean = false;
             do {
@@ -118,14 +119,44 @@ async function mergeMaster(): Promise<void> {
             await git.push();
         }
     }
+
 }
 
+async function retrieveMap(rfcToUpdate: string[]) {
+    const logPrefix = '[retrieveMap] -';
+    let mapModuleBranch = new Map<string, string[]>
+
+    for (let module of productionModules) {
+        process.chdir('../' + module);
+        mapModuleBranch.set(module, []);
+        const branches = await git.branch();
+        for (const rfc of rfcToUpdate) {
+            const targetBranchRaw = Object.keys(branches.branches).find(branchName => Utils.isValidRFCBranch(branchName, rfc));
+            if (!targetBranchRaw) {
+                console.log(`${logPrefix} No valid branch found for rfc ${rfc} in module ${module}, skipping...`);
+                continue;
+            }
+            const targetBranch = Utils.normalizeBranchName(targetBranchRaw);
+
+            // @ts-ignore
+            let existingValues: string[] = mapModuleBranch.get(module);
+            if (!existingValues?.includes(targetBranch)) {
+                existingValues?.push(targetBranch);
+            }
+            mapModuleBranch.set(module, existingValues);
+        }
+    }
+    return mapModuleBranch;
+}
 
 async function retrieveRfcRelease() {
     const redmine = new Redmine('https://redmine.gbm.lan', redmineConfig);
 
     let rfcWeb = [];
     let rfcMobile = [];
+
+    let rfcWebCanali = [];
+    let rfcMobileCanali = [];
 
     let releaseWebId = await prompt.get({
         description: 'Inserisci id della release NMOL'
@@ -148,12 +179,28 @@ async function retrieveRfcRelease() {
         "fixed_version_id": releaseMobileId.question,
         limit: 1000,
     })
+    let issuesWebCanali = await redmine.listIssues({
+        assigned_to_id: 3489,
+        // @ts-ignore
+        "fixed_version_id": releaseWebId.question,
+        limit: 1000,
+    })
+    let issuesMobileCanali = await redmine.listIssues({
+        assigned_to_id: 3489,
+        // @ts-ignore
+        "fixed_version_id": releaseMobileId.question,
+        limit: 1000,
+    })
     rfcWeb = issuesWeb.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
     rfcMobile = issuesMobile.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+    rfcWebCanali = issuesWebCanali.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+    rfcMobileCanali = issuesMobileCanali.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
     console.log(rfcWeb);
     console.log(rfcMobile);
+    console.log(rfcWebCanali);
+    console.log(rfcMobileCanali);
 
-    return [...rfcWeb, ...rfcMobile];
+    return [...rfcWeb, ...rfcMobile, ...rfcWebCanali, ...rfcMobileCanali];
 }
 
 function getCommitMessage(branch: string): string {

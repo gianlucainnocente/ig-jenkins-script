@@ -62,6 +62,8 @@ export const deloitteModulesToCreateBranch = [
 ]
 
 export const productionModules = [
+    'cross_flutter_libarch_uicomponents',
+    'cross_flutter_libarch_shared',
     'ib_flutter_lib_a11y_utils',
     'ib_flutter_feature_keyhole',
     'ib_flutter_feature_bollettini',
@@ -71,8 +73,12 @@ export const productionModules = [
     'ib_flutter_feature_conti',
     'ib_flutter_feature_carte',
     'ib_flutter_feature_ricariche',
+    'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
     'ib_flutter_feature_polizze',
+    'ib_flutter_feature_rewarding',
+    'ib_flutter_feature_areapersonale',
+    'ib_flutter_feature_trading',
     'ib_flutter_app_banca'
 ]
 
