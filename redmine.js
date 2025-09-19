@@ -390,9 +390,9 @@ async function fetchUserDetailsWithCache(userId) {
     }
 }
 
-// Sync issues to Supabase
+// Sync issues to Supabase using bulk operations
 async function syncIssues(foundProjects, lastSync) {
-    console.log(`${colors.yellow}🚀 Starting sync to Supabase...${colors.reset}`);
+    console.log(`${colors.yellow}🚀 Starting sync to Supabase with bulk operations...${colors.reset}`);
 
     // Fetch steps first
     const steps = await fetchSteps();
@@ -402,44 +402,38 @@ async function syncIssues(foundProjects, lastSync) {
     }
 
     let totalSynced = 0;
+    const allIssues = [];
+    const allStepRecords = [];
 
     for (const projectName of foundProjects) {
-        console.log(`${colors.blue}📥 Syncing project: ${projectName}${colors.reset}`);
+        console.log(`${colors.blue}📥 Collecting issues from project: ${projectName}${colors.reset}`);
 
         try {
             // Fetch all issues from this project
             const issues = await fetchAllIssuesFromProject(projectName, lastSync);
+
+            issues.forEach(issue => {
+                console.log(`${colors.cyan}🔖 Issue ID ${issue.id}: ${issue.subject} [Project: ${issue.project_name}, Status: ${issue.status_name}]${colors.reset}`);
+            });
 
             if (issues.length === 0) {
                 console.log(`${colors.cyan}✨ No issues to sync for project ${projectName}${colors.reset}`);
                 continue;
             }
 
-            // Process each issue
+            // Process each issue for bulk operations
             for (let i = 0; i < issues.length; i++) {
                 const issue = issues[i];
 
                 try {
-                    // Show progress every 10 issues
-                    if (i % 10 === 0) {
+                    // Show progress every 50 issues
+                    if (i % 50 === 0) {
                         console.log(`${colors.cyan}📊 Processing issue ${i + 1}/${issues.length} for ${projectName}${colors.reset}`);
                     }
-
-                    // Check if issue exists
-                    const checkResponse = await makeRequest(`${SUPABASE_URL}/rest/v1/issues?select=id,updated_on&id=eq.${issue.id}`, {
-                        method: 'GET',
-                        headers: {
-                            'apikey': SUPABASE_SERVICE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
 
                     // Get developer name from custom field ID 5 with caching
                     const developerUserId = issue.custom_fields?.find(cf => cf.id === 5)?.value;
                     const developerName = developerUserId ? await fetchUserDetailsWithCache(developerUserId) : null;
-
-                    if (developerName) console.log(`${colors.cyan}👨‍💻 Issue ${issue.id} assigned to developer: ${developerName}${colors.reset}`);
 
                     const issueData = {
                         id: issue.id,
@@ -460,95 +454,91 @@ async function syncIssues(foundProjects, lastSync) {
                         synced_at: new Date().toISOString()
                     };
 
-                    const existingIssues = checkResponse.data || [];
+                    allIssues.push(issueData);
 
-                    if (existingIssues.length > 0) {
-                        // Update existing issue
-                        const updateResponse = await makeRequest(`${SUPABASE_URL}/rest/v1/issues?id=eq.${issue.id}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'apikey': SUPABASE_SERVICE_KEY,
-                                'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'return=minimal'
-                            },
-                            body: JSON.stringify({
-                                status_id: issueData.status_id,
-                                status_name: issueData.status_name,
-                                assigned_to_id: issueData.assigned_to_id,
-                                assigned_to_name: developerName, // Use the resolved developer name
-                                fixed_version_id: issueData.fixed_version_id,
-                                fixed_version_name: issueData.fixed_version_name,
-                                updated_on: issueData.updated_on,
-                                synced_at: issueData.synced_at
-                            })
-                        });
+                    // Create step records for new issues
+                    const stepRecords = steps.map(step => ({
+                        issue_id: issue.id,
+                        step_id: step.id,
+                        completed: false
+                    }));
+                    allStepRecords.push(...stepRecords);
 
-                        if (updateResponse.status === 204) {
-                            if (i % 10 === 0 || i === issues.length - 1) {
-                                console.log(`${colors.green}✅ Updated issue ${issue.id}: ${issue.subject.substring(0, 50)}...${colors.reset}`);
-                            }
-                        } else {
-                            console.log(`${colors.red}❌ Failed to update issue ${issue.id}: ${updateResponse.status}${colors.reset}`);
-                        }
-                    } else {
-                        // Insert new issue
-                        const insertResponse = await makeRequest(`${SUPABASE_URL}/rest/v1/issues`, {
-                            method: 'POST',
-                            headers: {
-                                'apikey': SUPABASE_SERVICE_KEY,
-                                'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'return=minimal'
-                            },
-                            body: JSON.stringify(issueData)
-                        });
-
-                        if (insertResponse.status === 201) {
-                            console.log(`${colors.green}✅ Created issue ${issue.id}: ${issue.subject.substring(0, 50)}...${colors.reset}`);
-
-                            // Create step records for new issue
-                            const stepRecords = steps.map(step => ({
-                                issue_id: issue.id,
-                                step_id: step.id,
-                                completed: false
-                            }));
-
-                            const stepsResponse = await makeRequest(`${SUPABASE_URL}/rest/v1/issue_steps`, {
-                                method: 'POST',
-                                headers: {
-                                    'apikey': SUPABASE_SERVICE_KEY,
-                                    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                                    'Content-Type': 'application/json',
-                                    'Prefer': 'return=minimal'
-                                },
-                                body: JSON.stringify(stepRecords)
-                            });
-
-                            if (stepsResponse.status !== 201) {
-                                console.log(`${colors.yellow}⚠️  Could not create step records for issue ${issue.id}${colors.reset}`);
-                            }
-                        } else {
-                            console.log(`${colors.red}❌ Failed to create issue ${issue.id}: ${insertResponse.status}${colors.reset}`);
-                        }
-                    }
-
-                    totalSynced++;
-
-                    // Small delay to avoid overwhelming the API
-                    if (i % 20 === 0) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
-
-                } catch (issueError) {
-                    console.log(`${colors.red}❌ Error processing issue ${issue.id}: ${issueError.message}${colors.reset}`);
+                } catch (error) {
+                    console.log(`${colors.yellow}⚠️  Error processing issue ${issue.id}: ${error.message}${colors.reset}`);
                 }
             }
+        } catch (error) {
+            console.log(`${colors.red}❌ Error collecting issues from ${projectName}: ${error.message}${colors.reset}`);
+        }
+    }
 
-            console.log(`${colors.green}✅ Completed syncing ${issues.length} issues from ${projectName}${colors.reset}`);
+    console.log(`${colors.blue}📊 Collected ${allIssues.length} issues for bulk operations${colors.reset}`);
 
-        } catch (projectError) {
-            console.log(`${colors.red}❌ Error syncing project ${projectName}: ${projectError.message}${colors.reset}`);
+    // Bulk upsert issues
+    if (allIssues.length > 0) {
+
+        const batchSize = 1000; // Increased batch size for better performance
+
+        for (let i = 0; i < allIssues.length; i += batchSize) {
+            const batch = allIssues.slice(i, i + batchSize);
+            console.log(`${colors.cyan}📦 Bulk upserting issues batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(allIssues.length/batchSize)} (${batch.length} issues)${colors.reset}`);
+
+            const response = await makeRequest(`${SUPABASE_URL}/rest/v1/issues`, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_SERVICE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify(batch)
+            });
+
+            if (response.status === 201) {
+                totalSynced += batch.length;
+                console.log(`${colors.green}✅ Successfully upserted ${batch.length} issues${colors.reset}`);
+            } else {
+                console.log(`${colors.red}❌ Failed to bulk upsert issues batch: ${response.status}${colors.reset}`);
+            }
+
+            // Small delay between batches
+            if (i + batchSize < allIssues.length) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+        }
+
+        // Bulk upsert issue steps
+        if (allStepRecords.length > 0) {
+            console.log(`${colors.blue}📊 Bulk upserting ${allStepRecords.length} step records${colors.reset}`);
+            const stepBatchSize = 5000; // Steps can handle larger batches
+
+            for (let i = 0; i < allStepRecords.length; i += stepBatchSize) {
+                const batch = allStepRecords.slice(i, i + stepBatchSize);
+                console.log(`${colors.cyan}📦 Bulk upserting step records batch ${Math.floor(i/stepBatchSize) + 1}/${Math.ceil(allStepRecords.length/stepBatchSize)} (${batch.length} records)${colors.reset}`);
+
+                const response = await makeRequest(`${SUPABASE_URL}/rest/v1/issue_steps`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_SERVICE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=ignore-duplicates' // Don't overwrite existing step progress
+                    },
+                    body: JSON.stringify(batch)
+                });
+
+                if (response.status === 201) {
+                    console.log(`${colors.green}✅ Successfully upserted step records batch ${Math.floor(i/stepBatchSize) + 1}${colors.reset}`);
+                } else {
+                    console.log(`${colors.yellow}⚠️  Failed to bulk upsert step records batch: ${response.status}${colors.reset}`);
+                }
+
+                // Small delay between batches
+                if (i + stepBatchSize < allStepRecords.length) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            }
         }
     }
 
