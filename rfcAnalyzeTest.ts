@@ -132,7 +132,11 @@ async function runFlutterAnalyzeInModule(moduleName: string): Promise<void> {
 }
 
 async function doFlutterAnalyze(): Promise<void> {
-    await Promise.all(modulesWithCurrentRFC.map(m => runFlutterAnalyzeInModule(m.name)));
+    console.log('[flutterAnalyze] - modulesWithCurrentRFC = ', modulesWithCurrentRFC.map(m => m.name));
+    //await Promise.all(modulesWithCurrentRFC.map(m => runFlutterAnalyzeInModule(m.name)));
+    for (const module of modulesWithCurrentRFC) {
+        await runFlutterAnalyzeInModule(module.name);
+    }
     console.log('[flutterAnalyze] - All modules analyzed in parallel ✅');
 }
 
@@ -168,7 +172,10 @@ async function runFlutterTestInModule(moduleName: string): Promise<void> {
 }
 
 async function doFlutterTest(): Promise<void> {
-    await Promise.all(modulesWithCurrentRFC.map(m => runFlutterTestInModule(m.name)));
+    //await Promise.all(modulesWithCurrentRFC.map(m => runFlutterTestInModule(m.name)));
+    for (const module of modulesWithCurrentRFC) {
+        await runFlutterTestInModule(module.name);
+    }
     console.log('[flutterTest] - All modules tested in parallel ✅');
 }
 
