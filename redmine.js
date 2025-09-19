@@ -10,7 +10,7 @@ const REDMINE_BASE_URL = 'http://redmine.gbm.lan:8080';
 const REDMINE_API_KEY = 'e69df1f50d938c7da8cb406ba80431bdf27195e9';
 const SUPABASE_URL = 'https://zprvhblmsoavgcbgagvi.supabase.co';
 const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwcnZoYmxtc29hdmdjYmdhZ3ZpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIyMzkzMywiZXhwIjoyMDczNzk5OTMzfQ.cH-985j3YeA8JXM6uZPXtiEom34FYh8JNPmmpbfdQkM'; // Get this from Supabase Dashboard > Settings > API
-const TARGET_PROJECTS = ['accessibilita-app-mediolanum', 'mobile', 'nuova-offerta-conto-corrente--review-pricing', 'chiusura-selfyconto-da-canali-digitali'];
+const TARGET_PROJECTS = ['accessibilita-app-mediolanum', 'mobile', 'nuova-offerta-conto-corrente--review-pricing', 'chiusura-selfyconto-da-canali-digitali', 'sviluppi-per-adeguamenti-normativi-sct-instant'];
 const SYNC_STATE_FILE = path.join(__dirname, 'redmine-sync-state.json');
 
 // Colors for console output
@@ -185,7 +185,7 @@ async function checkProjectsAndCounts(lastSync) {
             foundProjects.push(projectName);
 
             // Get total issues count (assigned to Deloitte)
-            const totalUrl = `${REDMINE_BASE_URL}/issues.json?project_id=${projectName}&status_id=*&limit=1&cf_83=Deloitte&include=custom_fields`;
+            const totalUrl = `${REDMINE_BASE_URL}/issues.json?project_id=${projectName}&status_id=*&limit=1&assigned_to_id=1959|3489&include=custom_fields`;
             const totalResponse = await makeRequest(totalUrl, {
                 method: 'GET',
                 headers: {
@@ -201,7 +201,7 @@ async function checkProjectsAndCounts(lastSync) {
 
                 // Get delta issues count if we have last sync time (assigned to Deloitte)
                 if (lastSync) {
-                    const deltaUrl = `${REDMINE_BASE_URL}/issues.json?project_id=${projectName}&status_id=*&limit=1&updated_on=>=${formatDateForRedmine(new Date(lastSync))}&cf_83=Deloitte&include=custom_fields`;
+                    const deltaUrl = `${REDMINE_BASE_URL}/issues.json?project_id=${projectName}&status_id=*&limit=1&updated_on=>=${formatDateForRedmine(new Date(lastSync))}&assigned_to_id=1959|3489&include=custom_fields`;
                     const deltaResponse = await makeRequest(deltaUrl, {
                         method: 'GET',
                         headers: {
@@ -245,7 +245,7 @@ async function fetchAllIssuesFromProject(projectName, lastSync = null) {
 
     while (hasMore) {
         try {
-            let issuesUrl = `${REDMINE_BASE_URL}/issues.json?project_id=${projectName}&status_id=*&limit=${limit}&offset=${offset}&cf_83=Deloitte&include=custom_fields`;
+            let issuesUrl = `${REDMINE_BASE_URL}/issues.json?project_id=${projectName}&status_id=*&limit=${limit}&offset=${offset}&assigned_to_id=1959|3489&include=custom_fields`;
 
             // Add delta filter if we have last sync time
             if (lastSync) {
