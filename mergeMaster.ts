@@ -163,28 +163,35 @@ async function retrieveRfcRelease() {
         "fixed_version_id": releaseWebId.question,
         limit: 1000,
     })
-    let issuesMobile = await redmine.listIssues({
-        assigned_to_id: 1959,
-        // @ts-ignore
-        "fixed_version_id": releaseMobileId.question,
-        limit: 1000,
-    })
+    if (releaseMobileId.question != '') {
+        let issuesMobile = await redmine.listIssues({
+            assigned_to_id: 1959,
+            // @ts-ignore
+            "fixed_version_id": releaseMobileId.question,
+            limit: 1000,
+        })
+        rfcMobile = issuesMobile.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+
+        let issuesMobileCanali = await redmine.listIssues({
+            assigned_to_id: 3489,
+            // @ts-ignore
+            "fixed_version_id": releaseMobileId.question,
+            limit: 1000,
+        })
+        rfcMobileCanali = issuesMobileCanali.issues.map((e: {
+            id: any;
+        }) => e.id).sort((a: number, b: number) => a - b);
+    }
+
     let issuesWebCanali = await redmine.listIssues({
         assigned_to_id: 3489,
         // @ts-ignore
         "fixed_version_id": releaseWebId.question,
         limit: 1000,
     })
-    let issuesMobileCanali = await redmine.listIssues({
-        assigned_to_id: 3489,
-        // @ts-ignore
-        "fixed_version_id": releaseMobileId.question,
-        limit: 1000,
-    })
+
     rfcWeb = issuesWeb.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
-    rfcMobile = issuesMobile.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
     rfcWebCanali = issuesWebCanali.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
-    rfcMobileCanali = issuesMobileCanali.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
     console.log(rfcWeb);
     console.log(rfcMobile);
     console.log(rfcWebCanali);
