@@ -1,8 +1,7 @@
 export class Utils {
     static isValidRFCBranch(branchName: string, rfc: string): boolean {
         return branchName.includes(rfc) &&
-            !branchName.includes('del-dev') &&
-            !branchName.includes('del-sys');
+            !branchName.includes('del-');
     }
 
     static normalizeBranchName(branchName: string): string {
