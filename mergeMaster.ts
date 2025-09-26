@@ -76,23 +76,24 @@ async function mergeMaster(): Promise<void> {
         }
         let branches = map.get(key) ?? [];
         for (let branch of branches) {
-            console.log(`[branch] ${key} ${remotes[0].name} ${branch}`);
-            await git.reset(ResetMode.HARD);
-            await git.checkout(branch);
-            await git.pull(remotes[0].name, branch);
-
-
             console.log(`${logPrefix} Merging ${branchFrom} into ${branch}`);
 
             let mergeOK: boolean = false;
             do {
                 try {
+                    console.log(`[branch] ${key} ${remotes[0].name} ${branch}`);
+                    await git.reset(ResetMode.HARD);
+                    await git.checkout(branch);
+                    await git.pull(remotes[0].name, branch);
+
+
                     let mergeResult = await git.mergeFromTo(branchFrom, branch);
                     if (mergeResult.failed) {
                         console.log(`${logPrefix} ${key} - merge failed. Exiting`);
                         process.exit();
                     }
                     console.log(`${logPrefix} ${key} - merge master into ${branch}. SUCCESS`);
+                    await git.push();
                     mergeOK = true;
                 } catch (e) {
                     console.log(`${logPrefix} ${module} - merge master into ${branch}. Error: ${e}`);
@@ -104,7 +105,6 @@ async function mergeMaster(): Promise<void> {
                     await git.commit(getCommitMessage(branch));
                 }
             } while (!mergeOK);
-            await git.push();
 
         }
 
