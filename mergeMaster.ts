@@ -1,13 +1,19 @@
 import simpleGit, {ResetMode, SimpleGit} from "simple-git";
-import {appBancaMasterDir, gitlabEmail, gitlabName} from "./constants";
+import {appBancaMasterDir, gitlabEmail, gitlabName, redmineToken, redmineUsername} from "./constants";
 import prompt from "prompt";
-import {modules, rfcToUpdate} from "./branches";
+import {deloitteModules, modules} from "./branches";
 import {Utils} from "./utils";
+import {Redmine, RedmineTS} from "redmine-ts";
 
 simpleGit().env({
     GIT_AUTHOR_NAME: gitlabName,
     GIT_AUTHOR_EMAIL: gitlabEmail
 });
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+const redmineConfig: RedmineTS.Config = {
+    apiKey: redmineToken,
+    username: redmineUsername,
+};
 
 const git: SimpleGit = simpleGit('./')
 prompt.start();
@@ -29,9 +35,9 @@ async function updateMaster(): Promise<void> {
     const logPrefix = '[updateMaster] -';
     let currentModule = '';
     try {
-        for (const module of modules) {
-            currentModule = module.name;
-            process.chdir('../' + module.name);
+        for (const module of deloitteModules) {
+            currentModule = module;
+            process.chdir('../' + module);
 
             let branchToUpdate = 'master';
 
@@ -39,11 +45,14 @@ async function updateMaster(): Promise<void> {
                 branchToUpdate = 'preproduzione_produzione';
             }
 
-            console.log(`${logPrefix} module ${module.name}`);
+            console.log(`${logPrefix} module ${module}`);
 
             await git.fetch();
-            await git.checkout(branchToUpdate);
-            await git.pull(module.name);
+            if(currentModule !== 'ib_flutter_feature_polizze') {
+                await git.checkout(branchToUpdate);
+                await git.pull(module);
+            }
+
         }
     } catch (e) {
         console.log(`${logPrefix} Error for ${currentModule}: ${e}`);
@@ -53,6 +62,8 @@ async function updateMaster(): Promise<void> {
 
 async function mergeMaster(): Promise<void> {
     const logPrefix = '[mergeMaster] - ';
+    let rfcToUpdate = await retrieveRfcRelease();
+
     for (const rfc of rfcToUpdate) {
         let currentModule = '';
         for (const module of modules) {
@@ -107,6 +118,42 @@ async function mergeMaster(): Promise<void> {
             await git.push();
         }
     }
+}
+
+
+async function retrieveRfcRelease() {
+    const redmine = new Redmine('https://redmine.gbm.lan', redmineConfig);
+
+    let rfcWeb = [];
+    let rfcMobile = [];
+
+    let releaseWebId = await prompt.get({
+        description: 'Inserisci id della release NMOL'
+    });
+    console.log(`Release NMOL Id: ${releaseWebId.question}`);
+
+    let releaseMobileId = await prompt.get({
+        description: 'Inserisci id della release NMOL'
+    });
+    console.log(`Release Mobile Id: ${releaseMobileId.question}`);
+    let issuesWeb = await redmine.listIssues({
+        assigned_to_id: 1959,
+        // @ts-ignore
+        "fixed_version_id": releaseWebId.question,
+        limit: 1000,
+    })
+    let issuesMobile = await redmine.listIssues({
+        assigned_to_id: 1959,
+        // @ts-ignore
+        "fixed_version_id": releaseMobileId.question,
+        limit: 1000,
+    })
+    rfcWeb = issuesWeb.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+    rfcMobile = issuesMobile.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+    console.log(rfcWeb);
+    console.log(rfcMobile);
+
+    return [...rfcWeb, ...rfcMobile];
 }
 
 function getCommitMessage(branch: string): string {

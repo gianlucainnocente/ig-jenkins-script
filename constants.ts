@@ -19,3 +19,13 @@ Impostare il percorso del proprio ib_flutter_app_banca locale
 export const appBancaDir = 'app banca path';
 
 export const appBancaMasterDir = '../mediolanum-master/ib_flutter_app_banca';
+
+
+/*
+ * Recuperare le info su Redmine
+ */
+
+export const redmineToken = '**';
+export const redmineUsername = 'Name Surname';
+
+export const appBancaMasterDir = '../../mediolanum_bugfix/ib_flutter_app_banca';
