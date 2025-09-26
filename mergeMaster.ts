@@ -22,13 +22,13 @@ async function run(): Promise<void> {
     await prompt.get({
         description: 'IMPORTANTE!!! Fai un discard di tutte le modifiche pendenti (o pushale) prima di continuare. Premi un tasto per continuare'
     });
-
     process.chdir(appBancaMasterDir)
-
+    console.time('run')
     await updateMaster();
     console.log('Update master finished');
-
     await mergeMaster();
+    console.timeEnd('run')
+
 }
 
 async function updateMaster(): Promise<void> {
@@ -48,7 +48,7 @@ async function updateMaster(): Promise<void> {
             console.log(`${logPrefix} module ${module}`);
 
             await git.fetch();
-            if(currentModule !== 'ib_flutter_feature_polizze') {
+            if (currentModule !== 'ib_flutter_feature_polizze') {
                 await git.checkout(branchToUpdate);
                 await git.pull(module);
             }
@@ -64,32 +64,22 @@ async function mergeMaster(): Promise<void> {
     const logPrefix = '[mergeMaster] - ';
     let rfcToUpdate = await retrieveRfcRelease();
 
-    for (const rfc of rfcToUpdate) {
-        let currentModule = '';
-        for (const module of modules) {
-            currentModule = module.name;
-            process.chdir('../' + module.name);
-            console.log(`${logPrefix} module ${module.name} and rfc ${rfc}`);
 
-            let branchFrom = 'master';
-            if (currentModule === 'ib_flutter_app_banca') {
-                branchFrom = 'preproduzione_produzione';
-            }
-
-            const remotes = await git.getRemotes();
-            const branches = await git.branch();
-            const targetBranchRaw = Object.keys(branches.branches).find(branchName => Utils.isValidRFCBranch(branchName, rfc));
-            if (!targetBranchRaw) {
-                console.log(`${logPrefix} No valid branch found for rfc ${rfc} in module ${module.name}, skipping...`);
-                continue;
-            }
-
-            const targetBranch = Utils.normalizeBranchName(targetBranchRaw);
-
-            console.log(`${logPrefix} Checking out branch ${targetBranch}`);
+    let map = await retrieveMap(rfcToUpdate);
+    let branchFrom = 'master';
+    const remotes = await git.getRemotes();
+    for (const key of map.keys()) {
+        console.log(`[module] ${key}`);
+        process.chdir('../' + key);
+        if (key === 'ib_flutter_app_banca') {
+            branchFrom = 'preproduzione_produzione';
+        }
+        let branches = map.get(key) ?? [];
+        for (let branch of branches) {
+            console.log(`[branch] ${key} ${remotes[0].name} ${branch}`);
             await git.reset(ResetMode.HARD);
-            await git.checkout(targetBranch);
-            await git.pull(remotes[0].name, targetBranch);
+            await git.checkout(branch);
+            await git.pull(remotes[0].name, branch);
 
 
             console.log(`${logPrefix} Merging ${branchFrom} into ${branch}`);
@@ -97,27 +87,27 @@ async function mergeMaster(): Promise<void> {
             let mergeOK: boolean = false;
             do {
                 try {
-                    let mergeResult = await git.mergeFromTo(branchFrom, targetBranch);
+                    let mergeResult = await git.mergeFromTo(branchFrom, branch);
                     if (mergeResult.failed) {
-                        console.log(`${logPrefix} ${module.name} - merge failed. Exiting`);
+                        console.log(`${logPrefix} ${key} - merge failed. Exiting`);
                         process.exit();
                     }
-
-                    console.log(`${logPrefix} ${module.name} - merge master into ${targetBranch}. SUCCESS`);
+                    console.log(`${logPrefix} ${key} - merge master into ${branch}. SUCCESS`);
                     mergeOK = true;
                 } catch (e) {
-                    console.log(`${logPrefix} ${module.name} - merge master into ${targetBranch}. Error: ${e}`);
+                    console.log(`${logPrefix} ${module} - merge master into ${branch}. Error: ${e}`);
 
                     await prompt.get({
                         description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
                     });
 
-                    await git.commit(getCommitMessage(targetBranch));
+                    await git.commit(getCommitMessage(branch));
                 }
             } while (!mergeOK);
-
             await git.push();
+
         }
+
     }
 
 }
@@ -164,7 +154,7 @@ async function retrieveRfcRelease() {
     console.log(`Release NMOL Id: ${releaseWebId.question}`);
 
     let releaseMobileId = await prompt.get({
-        description: 'Inserisci id della release NMOL'
+        description: 'Inserisci id della release Mobile'
     });
     console.log(`Release Mobile Id: ${releaseMobileId.question}`);
     let issuesWeb = await redmine.listIssues({
