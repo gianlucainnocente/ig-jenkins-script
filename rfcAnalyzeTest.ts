@@ -28,6 +28,7 @@ async function run(): Promise<void> {
     });
 
     process.chdir(appBancaMasterDir)
+    console.time('run')
     let rfcToUpdate = await retrieveRfcRelease();
 
 
@@ -86,6 +87,7 @@ async function run(): Promise<void> {
         console.log('========================================');
 
     }
+    console.timeEnd('run')
 
 }
 
@@ -144,7 +146,7 @@ async function runFlutterTestInModule(moduleName: string): Promise<void> {
 
     let done = false;
     while (!done) {
-        console.log(`${logPrefix} Starting flutter test...`);
+        console.log(`${logPrefix} Starting test...`);
 
         try {
             const {stdout, stderr} = await exec('flutter test', {cwd: `../${moduleName}`});
