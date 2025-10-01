@@ -251,16 +251,18 @@ async function retrieveMap(rfcToUpdate: string[]) {
             if (!targetBranchRaw) {
                 continue;
             }
+            const targetBranch = Utils.normalizeBranchName(targetBranchRaw);
 
-            console.log(`${logPrefix}  Branch found for rfc ${rfc} in module ${module}`);
-            let existingValues: string[] | undefined = mapModuleBranch.get(targetBranchRaw);
+            console.log(`${logPrefix}  Branch found ${targetBranch} in module ${module}`);
+            let existingValues: string[] | undefined = mapModuleBranch.get(targetBranch);
             if (!existingValues) {
-                mapModuleBranch.set(targetBranchRaw, []);
+                mapModuleBranch.set(targetBranch, []);
             }
             if (!existingValues?.includes(module)) {
+                existingValues ??= [];
                 existingValues?.push(module);
             }
-            mapModuleBranch.set(targetBranchRaw, existingValues ?? []);
+            mapModuleBranch.set(targetBranch, existingValues ?? []);
         }
     }
     return mapModuleBranch;
