@@ -1,9 +1,10 @@
 import simpleGit, {ResetMode, SimpleGit} from "simple-git";
-import {appBancaMasterDir, gitlabEmail, gitlabName, operatingSystem} from "./constants";
+import {appBancaMasterDir, gitlabEmail, gitlabName, operatingSystem, redmineToken, redmineUsername} from "./constants";
 import prompt from "prompt";
-import {modules, rfcToUpdate} from "./branches";
+import {modules, productionModules} from "./branches";
 import util from "node:util";
 import {Utils} from "./utils";
+import {Redmine, RedmineTS} from "redmine-ts";
 
 const exec = util.promisify(require('child_process').exec);
 
@@ -11,11 +12,14 @@ simpleGit().env({
     GIT_AUTHOR_NAME: gitlabName,
     GIT_AUTHOR_EMAIL: gitlabEmail
 });
-
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+const redmineConfig: RedmineTS.Config = {
+    apiKey: redmineToken,
+    username: redmineUsername,
+};
 const git: SimpleGit = simpleGit('./')
 prompt.start();
 
-let modulesWithCurrentRFC: any[] = [];
 
 async function run(): Promise<void> {
     const logPrefix = '[run] -';
@@ -24,37 +28,29 @@ async function run(): Promise<void> {
     });
 
     process.chdir(appBancaMasterDir)
+    let rfcToUpdate = await retrieveRfcRelease();
 
+
+    let map = await retrieveMap(rfcToUpdate);
+
+
+    console.log(map);
     const processedRFCs: string[] = [];
-    for (const rfc of rfcToUpdate) {
-        modulesWithCurrentRFC = [];
-        await updateMaster();
-        if (processedRFCs.includes(rfc)) {
-            console.log(`${logPrefix} RFC ${rfc} already processed, skipping...`);
-            continue;
-        }
+    for (const key of map.keys()) {
+        console.log(`[branch] ${key}`);
 
-        for (const module of modules) {
-            process.chdir('../' + module.name);
-
+        let modules = map.get(key) ?? [];
+        for (let module of modules) {
+            process.chdir('../' + module);
             const remotes = await git.getRemotes();
-            const branches = await git.branch();
-            const targetBranchRaw = Object.keys(branches.branches).find(branchName => Utils.isValidRFCBranch(branchName, rfc));
-            if (!targetBranchRaw) {
-                console.log(`${logPrefix} No valid branch found for rfc ${rfc} in module ${module.name}, skipping...`);
-                continue;
-            }
 
-            modulesWithCurrentRFC.push(module);
-
-            const targetBranch = Utils.normalizeBranchName(targetBranchRaw);
 
             await git.reset(ResetMode.HARD);
-            await git.checkout(targetBranch);
-            await git.pull(remotes[0].name, targetBranch);
+            await git.checkout(key);
+            await git.pull(remotes[0].name, key);
         }
 
-        console.log(`${logPrefix} All modules updated for rfc ${rfc}`);
+        console.log(`${logPrefix} All modules updated for rfc ${key}`);
         console.log('----------------------------------------');
 
         process.chdir('../ib_flutter_app_banca');
@@ -68,10 +64,10 @@ async function run(): Promise<void> {
         console.log(`${logPrefix} Local dependencies set up completed.`);
 
         const responseAnalyze = await prompt.get({
-            description: `${logPrefix} Puntamenti locali impostati per l'RFC ${rfc}. Vuoi eseguire l'analyze?\n1 - Si\n2 - No`,
+            description: `${logPrefix} Puntamenti locali impostati per l'RFC ${key}. Vuoi eseguire l'analyze?\n1 - Si\n2 - No`,
         });
         if (responseAnalyze.question == '1') {
-            await doFlutterAnalyze();
+            await doFlutterAnalyze(modules);
         }
 
         const responseTest = await prompt.get({
@@ -79,15 +75,18 @@ async function run(): Promise<void> {
         });
 
         if (responseTest.question == '1') {
-            await doFlutterTest();
+            await doFlutterTest(modules);
         }
 
-        await doCommitAndPush(rfc);
+        await doCommitAndPush(key, modules);
 
-        processedRFCs.push(rfc);
-        console.log(`${logPrefix} RFC ${rfc} processing completed.`);
+        await updateMaster(modules);
+        processedRFCs.push(key);
+        console.log(`${logPrefix} RFC ${key} processing completed.`);
         console.log('========================================');
+
     }
+
 }
 
 async function runFlutterAnalyzeInModule(moduleName: string): Promise<void> {
@@ -99,11 +98,11 @@ async function runFlutterAnalyzeInModule(moduleName: string): Promise<void> {
 
         try {
             await exec(
-                'flutter pub run build_runner build --delete-conflicting-outputs',
-                { cwd: `../${moduleName}` }
+                'dart run build_runner build --delete-conflicting-outputs',
+                {cwd: `../${moduleName}`}
             );
 
-            const { stdout, stderr } = await exec('flutter analyze', { cwd: `../${moduleName}` });
+            const {stdout, stderr} = await exec('flutter analyze', {cwd: `../${moduleName}`});
 
             if (stdout) console.log(`${logPrefix} stdout:\n${stdout}`);
             if (stderr) console.log(`${logPrefix} stderr:\n${stderr}`);
@@ -131,11 +130,11 @@ async function runFlutterAnalyzeInModule(moduleName: string): Promise<void> {
     console.log(`${logPrefix} Finished`);
 }
 
-async function doFlutterAnalyze(): Promise<void> {
-    console.log('[flutterAnalyze] - modulesWithCurrentRFC = ', modulesWithCurrentRFC.map(m => m.name));
+async function doFlutterAnalyze(modules: string[]): Promise<void> {
+    console.log('[flutterAnalyze] - modulesWithCurrentRFC = ', modules);
     //await Promise.all(modulesWithCurrentRFC.map(m => runFlutterAnalyzeInModule(m.name)));
-    for (const module of modulesWithCurrentRFC) {
-        await runFlutterAnalyzeInModule(module.name);
+    for (const module of modules) {
+        await runFlutterAnalyzeInModule(module);
     }
     console.log('[flutterAnalyze] - All modules analyzed in parallel ✅');
 }
@@ -148,7 +147,7 @@ async function runFlutterTestInModule(moduleName: string): Promise<void> {
         console.log(`${logPrefix} Starting flutter test...`);
 
         try {
-            const { stdout, stderr } = await exec('flutter test', { cwd: `../${moduleName}` });
+            const {stdout, stderr} = await exec('flutter test', {cwd: `../${moduleName}`});
 
             if (stdout) console.log(`${logPrefix} stdout:\n${stdout}`);
             if (stderr) console.log(`${logPrefix} stderr:\n${stderr}`);
@@ -171,25 +170,25 @@ async function runFlutterTestInModule(moduleName: string): Promise<void> {
     }
 }
 
-async function doFlutterTest(): Promise<void> {
+async function doFlutterTest(modules: string[]): Promise<void> {
     //await Promise.all(modulesWithCurrentRFC.map(m => runFlutterTestInModule(m.name)));
-    for (const module of modulesWithCurrentRFC) {
-        await runFlutterTestInModule(module.name);
+    for (const module of modules) {
+        await runFlutterTestInModule(module);
     }
     console.log('[flutterTest] - All modules tested in parallel ✅');
 }
 
-async function doCommitAndPush(rfc: string): Promise<void> {
+async function doCommitAndPush(rfc: string, modules: string[]): Promise<void> {
     const logPrefix = '[commitAndPush] -';
 
-    for (const module of modulesWithCurrentRFC) {
-        process.chdir('../' + module.name);
+    for (const module of modules) {
+        process.chdir('../' + module);
 
         const remotes = await git.getRemotes();
         const branches = await git.branch();
         const targetBranchRaw = Object.keys(branches.branches).find(branchName => Utils.isValidRFCBranch(branchName, rfc));
         if (!targetBranchRaw) {
-            console.log(`${logPrefix} No valid branch found for rfc ${rfc} in module ${module.name}, skipping...`);
+            console.log(`${logPrefix} No valid branch found for rfc ${rfc} in module ${module}, skipping...`);
             continue;
         }
 
@@ -203,24 +202,24 @@ async function doCommitAndPush(rfc: string): Promise<void> {
         }
         const status = await git.status();
         if (status.files.length === 0) {
-            console.log(`${logPrefix} No changes to commit in ${module.name}, skipping...`);
+            console.log(`${logPrefix} No changes to commit in ${module}, skipping...`);
             continue;
         }
 
-        console.log(`${logPrefix} Changes detected in ${module.name}. Committing and pushing...`);
+        console.log(`${logPrefix} Changes detected in ${module}. Committing and pushing...`);
         await git.add('.');
         await git.commit(Utils.getCommitMessage(targetBranch, 'analyze and test fixes'));
         await git.push(remotes[0].name, targetBranch);
     }
 }
 
-async function updateMaster(): Promise<void> {
+async function updateMaster(modules: string[]): Promise<void> {
     const logPrefix = '[updateMaster] -';
     let currentModule = '';
     try {
         for (const module of modules) {
-            currentModule = module.name;
-            process.chdir('../' + module.name);
+            currentModule = module;
+            process.chdir('../' + module);
 
             let branchToUpdate = 'master';
 
@@ -228,17 +227,104 @@ async function updateMaster(): Promise<void> {
                 branchToUpdate = 'preproduzione_produzione';
             }
 
-            console.log(`${logPrefix} module ${module.name}`);
+            console.log(`${logPrefix} module ${module}`);
 
             await git.reset(ResetMode.HARD);
             await git.fetch();
             await git.checkout(branchToUpdate);
-            await git.pull(module.name);
         }
     } catch (e) {
         console.log(`${logPrefix} Error for ${currentModule}: ${e}`);
         process.exit();
     }
+}
+
+async function retrieveMap(rfcToUpdate: string[]) {
+    const logPrefix = '[retrieveMap] -';
+    let mapModuleBranch = new Map<string, string[]>
+
+    for (const rfc of rfcToUpdate) {
+        for (const module of productionModules) {
+            process.chdir('../' + module);
+            const branches = await git.branch();
+            const targetBranchRaw = Object.keys(branches.branches).find(branchName => Utils.isValidRFCBranch(branchName, rfc));
+            if (!targetBranchRaw) {
+                continue;
+            }
+
+            console.log(`${logPrefix}  Branch found for rfc ${rfc} in module ${module}`);
+            let existingValues: string[] | undefined = mapModuleBranch.get(targetBranchRaw);
+            if (!existingValues) {
+                mapModuleBranch.set(targetBranchRaw, []);
+            }
+            if (!existingValues?.includes(module)) {
+                existingValues?.push(module);
+            }
+            mapModuleBranch.set(targetBranchRaw, existingValues ?? []);
+        }
+    }
+    return mapModuleBranch;
+}
+
+async function retrieveRfcRelease() {
+    const redmine = new Redmine('https://redmine.gbm.lan', redmineConfig);
+
+    let rfcWeb = [];
+    let rfcMobile = [];
+
+    let rfcWebCanali = [];
+    let rfcMobileCanali = [];
+
+    let releaseWebId = await prompt.get({
+        description: 'Inserisci id della release NMOL'
+    });
+    console.log(`Release NMOL Id: ${releaseWebId.question}`);
+
+    let releaseMobileId = await prompt.get({
+        description: 'Inserisci id della release Mobile'
+    });
+    console.log(`Release Mobile Id: ${releaseMobileId.question}`);
+    let issuesWeb = await redmine.listIssues({
+        assigned_to_id: 1959,
+        // @ts-ignore
+        "fixed_version_id": releaseWebId.question,
+        limit: 1000,
+    })
+    if (releaseMobileId.question != '') {
+        let issuesMobile = await redmine.listIssues({
+            assigned_to_id: 1959,
+            // @ts-ignore
+            "fixed_version_id": releaseMobileId.question,
+            limit: 1000,
+        })
+        rfcMobile = issuesMobile.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+
+        let issuesMobileCanali = await redmine.listIssues({
+            assigned_to_id: 3489,
+            // @ts-ignore
+            "fixed_version_id": releaseMobileId.question,
+            limit: 1000,
+        })
+        rfcMobileCanali = issuesMobileCanali.issues.map((e: {
+            id: any;
+        }) => e.id).sort((a: number, b: number) => a - b);
+    }
+
+    let issuesWebCanali = await redmine.listIssues({
+        assigned_to_id: 3489,
+        // @ts-ignore
+        "fixed_version_id": releaseWebId.question,
+        limit: 1000,
+    })
+
+    rfcWeb = issuesWeb.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+    rfcWebCanali = issuesWebCanali.issues.map((e: { id: any; }) => e.id).sort((a: number, b: number) => a - b);
+    console.log(rfcWeb);
+    console.log(rfcMobile);
+    console.log(rfcWebCanali);
+    console.log(rfcMobileCanali);
+
+    return [...rfcWeb, ...rfcMobile, ...rfcWebCanali, ...rfcMobileCanali];
 }
 
 void run();
