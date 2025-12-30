@@ -79,6 +79,8 @@ export const productionModules = [
     'ib_flutter_feature_rewarding',
     'ib_flutter_feature_areapersonale',
     'ib_flutter_feature_trading',
+    'ib_flutter_feature_mutuieprestiti',
+    'ib_flutter_feature_fondi',
     'ib_flutter_app_banca'
 ]
 
