@@ -3,12 +3,6 @@ Aggiornare eventualmente il branch MVP
  */
 export const delDevPipe = 'feature/del-dev-pipe';
 
-export const polizzeBranch = 'feature/258251_258255_258256';
-
-export const rewardingBranch = 'feature/259787_259789_259788';
-
-
-
 export const deloitteModules = [
     'ib_flutter_lib_a11y_utils',
     'ib_flutter_feature_areapersonale',
@@ -244,7 +238,7 @@ export const modules = [
         "name": "ib_flutter_feature_polizze",
         "namespace": "nib",
         "branches": [
-            polizzeBranch,
+            delDevPipe,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19701",
@@ -255,7 +249,7 @@ export const modules = [
         "name": "ib_flutter_feature_rewarding",
         "namespace": "nib",
         "branches": [
-            rewardingBranch,
+            delDevPipe,
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19878",
