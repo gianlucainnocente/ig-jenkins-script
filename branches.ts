@@ -261,15 +261,17 @@ export const modules = [
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
     },
-    /*{
+    {
         "name": "ib_flutter_feature_fondi",
         "namespace": "nib",
-        "branches": fondiBranches,
+        "branches": [
+            delDevPipe
+        ],
         "parallelGroup": 3,
         "gitlabProjectId": "17930",
         "jenkinsJob": "flutter_lib",
         "autoapprove": true
-    },*/
+    },
     {
         "name": "ib_flutter_app_banca",
         "namespace": "nib",
