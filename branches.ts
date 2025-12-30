@@ -11,19 +11,20 @@ export const rewardingBranch = 'feature/259787_259789_259788';
 
 export const deloitteModules = [
     'ib_flutter_lib_a11y_utils',
-    'ib_flutter_feature_keyhole',
+    'ib_flutter_feature_areapersonale',
     'ib_flutter_feature_bollettini',
-    'ib_flutter_feature_login',
     'ib_flutter_feature_bonifici',
-    'ib_flutter_feature_tributi',
-    'ib_flutter_feature_conti',
     'ib_flutter_feature_carte',
+    'ib_flutter_feature_conti',
+    'ib_flutter_feature_fondi',
+    'ib_flutter_feature_homepage',
+    'ib_flutter_feature_keyhole',
+    'ib_flutter_feature_login',
+    'ib_flutter_feature_rewarding',
     'ib_flutter_feature_ricariche',
     'ib_flutter_feature_prelievieversamenti',
-    'ib_flutter_feature_homepage',
     'ib_flutter_feature_polizze',
-    'ib_flutter_feature_rewarding',
-    'ib_flutter_feature_areapersonale',
+    'ib_flutter_feature_tributi',
     'ib_flutter_app_banca'
 ]
 
