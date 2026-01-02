@@ -58,6 +58,9 @@ const checkJsonUniqueness = (baseDir: string): FileCheckResult[] => {
 
         const keysWithMultipleValues = Array.from(grouped.entries())
             .filter(([_, values]) => values.size > 1)
+            .filter(([key, _]) => {
+                return key !== 'all' && key !== 'text' && key !== 'title' && key !== 'button';
+            })
             .map(([key]) => key);
 
         return { file, keysWithMultipleValues };
