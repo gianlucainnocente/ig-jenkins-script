@@ -39,21 +39,37 @@ const getAllFiles = (dir: string): string[] => {
 
 const checkJsonUniqueness = (baseDir: string): FileCheckResult[] => {
     const jsonFiles = fs.readdirSync(baseDir).filter(file => file.endsWith('.json'));
+
+    const collectEntries = (obj: any, pathPrefix = ''): { key: string; value: any }[] => {
+        let entries: { key: string; value: any }[] = [];
+
+        Object.entries(obj).forEach(([key, value]) => {
+            const fullKey = pathPrefix ? `${pathPrefix}.${key}` : key;
+
+            if (typeof value === 'object' && value !== null) {
+                // ricorsione per oggetti annidati
+                entries = entries.concat(collectEntries(value, fullKey));
+            } else {
+                entries.push({ key: fullKey, value });
+            }
+        });
+
+        return entries;
+    };
+
     return jsonFiles.map(file => {
         const filePath = path.join(baseDir, file);
         const rawData = fs.readFileSync(filePath, 'utf-8').trim().replace(/^﻿/, '');
-        const entryRegex = /"([^"\\]+)":\s*"((?:[^"\\]|\\.)*)"/g;
-        const entries: { key: string; value: string }[] = [];
+        const json = JSON.parse(rawData);
 
-        let match;
-        while ((match = entryRegex.exec(rawData)) !== null) {
-            entries.push({ key: match[1], value: match[2] });
-        }
+        const entries = collectEntries(json);
 
+        // Raggruppa chiavi e controlla valori diversi
         const grouped = new Map<string, Set<string>>();
+
         entries.forEach(({ key, value }) => {
             if (!grouped.has(key)) grouped.set(key, new Set());
-            grouped.get(key)!.add(value);
+            grouped.get(key)!.add(JSON.stringify(value));
         });
 
         const keysWithMultipleValues = Array.from(grouped.entries())

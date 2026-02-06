@@ -1,3 +1,5 @@
+import notifier from 'node-notifier';
+
 export class Utils {
     static isValidRFCBranch(branchName: string, rfc: string): boolean {
         return branchName.includes(rfc) &&
@@ -19,4 +21,11 @@ export class Utils {
         return `refs #${rfc} - ${message}`;
     }
 
+    static sendNotification(message: string): void {
+        notifier.notify({
+            title: '⚠️ Flutter Script',
+            message: message,
+            sound: true,
+        });
+    }
 }

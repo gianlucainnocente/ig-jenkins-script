@@ -192,6 +192,22 @@ async function deploy() {
 
             await doFormatAndFix();
 
+            const mockRes = await prompt.get({
+                description: 'Vuoi procedere con la build dei mock?\n1 - Si\n2 - No'
+            });
+
+            if (mockRes.question == '1') {
+                await exec('rps build deps')
+            }
+
+            const analyzeRes = await prompt.get({
+                description: 'Vuoi procedere con l\'analyze su tutti i moduli?\n1 - Si\n2 - No'
+            });
+
+            if (analyzeRes.question == '1') {
+                await exec('rps analyze deps')
+            }
+
             if (executeGenerate) {
                 await doRunGenerate();
             }
@@ -605,7 +621,7 @@ async function doSetVersions() {
 
                 incremental++; // incrementa semplicemente
 
-                newVersion = `${prefix}.0.${incremental}+${prefix}${incremental.toString().padStart(3, '0')}`;
+                newVersion = `${prefix}.1.${incremental}+${prefix}1${incremental.toString().padStart(3, '0')}`;
                 appBancaVersion = newVersion;
 
                 console.log(`doSetVersions ${module.name} - lastVersion: ${lastVersion} - prefix: ${prefix} - incremental: ${incremental} - newVersion: ${newVersion}`);
@@ -779,7 +795,7 @@ async function approveMergeRequests(commits: any, mergeRequests: any, parallelGr
     });*/
     console.log('Inizio approvazione merge request gruppo ' + parallelGroup + '. Premi un tasto per continuare')
 
-    await sleep(3000);
+    await sleep(7000);
 
     let modulesToApprove = modules.filter(module => module.parallelGroup === parallelGroup && module.autoapprove);
 

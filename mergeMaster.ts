@@ -66,6 +66,7 @@ async function mergeMaster(): Promise<void> {
 
 
     let map = await retrieveMap(rfcToUpdate);
+    console.log('Branches to merge retrieved', map);
     let branchFrom = 'master';
     const remotes = await git.getRemotes();
     for (const key of map.keys()) {
@@ -77,7 +78,7 @@ async function mergeMaster(): Promise<void> {
         let branches = map.get(key) ?? [];
         for (let branch of branches) {
             console.log(`${logPrefix} Merging ${branchFrom} into ${branch}`);
-
+            if (branch === 'feature/280462_280463_280464') continue
             let mergeOK: boolean = false;
             do {
                 try {
@@ -98,6 +99,7 @@ async function mergeMaster(): Promise<void> {
                 } catch (e) {
                     console.log(`${logPrefix} ${module} - merge master into ${branch}. Error: ${e}`);
 
+                    Utils.sendNotification(`Merge fallito in ${key} - ${branch}. Risolvi i conflitti e continua.`);
                     await prompt.get({
                         description: 'Merge fallito. Risolvi i conflitti e premi un tasto per riprovare.'
                     });

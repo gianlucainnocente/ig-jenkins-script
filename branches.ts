@@ -35,6 +35,7 @@ export const deloitteModulesToMerge = [
     'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
     'ib_flutter_feature_areapersonale',
+    'ib_flutter_feature_fondi',
     'ib_flutter_app_banca'
 ]
 
@@ -53,6 +54,7 @@ export const deloitteModulesToCreateBranch = [
     'ib_flutter_feature_prelievieversamenti',
     'ib_flutter_feature_homepage',
     'ib_flutter_feature_areapersonale',
+    'ib_flutter_feature_fondi',
     'ib_flutter_app_banca'
 ]
 
@@ -100,7 +102,7 @@ export const modules = [
         ],
         "parallelGroup": 1,
         "gitlabProjectId": "16898",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true,
         "commitBeforeCheckOut": true
     },
@@ -112,7 +114,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "18637",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -123,7 +125,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16937",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -134,7 +136,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16902",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -145,7 +147,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17021",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -156,7 +158,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16933",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -167,7 +169,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17017",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -178,7 +180,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17220",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     /*{
@@ -187,7 +189,7 @@ export const modules = [
         "branches": tradingBranches,
         "parallelGroup": 2,
         "gitlabProjectId": "17015",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },*/
     {
@@ -198,7 +200,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "17087",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -209,7 +211,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "18847",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -220,7 +222,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19214",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -231,7 +233,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "16903",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -242,7 +244,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19701",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -253,7 +255,7 @@ export const modules = [
         ],
         "parallelGroup": 2,
         "gitlabProjectId": "19878",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -264,7 +266,7 @@ export const modules = [
         ],
         "parallelGroup": 3,
         "gitlabProjectId": "17930",
-        "jenkinsJob": "flutter_lib",
+        "jenkinsJob": "flutter_lib_latest_version",
         "autoapprove": true
     },
     {
@@ -275,7 +277,7 @@ export const modules = [
         ],
         "parallelGroup": 3,
         "gitlabProjectId": "16896",
-        "jenkinsJob": "flutter_app",
+        "jenkinsJob": "flutter_app_latest_version",
         "autoapprove": true
     }
 ]

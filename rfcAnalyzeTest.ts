@@ -1,5 +1,13 @@
 import simpleGit, {ResetMode, SimpleGit} from "simple-git";
-import {appBancaMasterDir, gitlabEmail, gitlabName, operatingSystem, redmineToken, redmineUsername} from "./constants";
+import {
+    analyzeTestModules,
+    appBancaMasterDir,
+    gitlabEmail,
+    gitlabName,
+    operatingSystem,
+    redmineToken,
+    redmineUsername
+} from "./constants";
 import prompt from "prompt";
 import {modules, productionModules} from "./branches";
 import util from "node:util";
@@ -36,7 +44,6 @@ async function run(): Promise<void> {
 
 
     console.log(map);
-    const processedRFCs: string[] = [];
     for (const key of map.keys()) {
         console.log(`[branch] ${key}`);
 
@@ -47,6 +54,7 @@ async function run(): Promise<void> {
 
 
             await git.reset(ResetMode.HARD);
+            await git.clean('f', ['-d']);
             await git.checkout(key);
             await git.pull(remotes[0].name, key);
         }
@@ -64,26 +72,15 @@ async function run(): Promise<void> {
 
         console.log(`${logPrefix} Local dependencies set up completed.`);
 
-        const responseAnalyze = await prompt.get({
-            description: `${logPrefix} Puntamenti locali impostati per l'RFC ${key}. Vuoi eseguire l'analyze?\n1 - Si\n2 - No`,
-        });
-        if (responseAnalyze.question == '1') {
-            await doFlutterAnalyze(modules);
-        }
+        await doFlutterAnalyze(modules);
 
-        const responseTest = await prompt.get({
-            description: `${logPrefix} Vuoi eseguire i test?\n1 - Si\n2 - No`,
-        });
-
-        if (responseTest.question == '1') {
-            await doFlutterTest(modules);
-        }
+        await doFlutterTest(modules);
 
         await doCommitAndPush(key, modules);
 
-        await updateMaster(modules);
-        processedRFCs.push(key);
-        console.log(`${logPrefix} RFC ${key} processing completed.`);
+        await updateMaster();
+
+        console.log(`${logPrefix} RFC ${key} processing completed. Remaining RFCs count: ${Array.from(map.keys()).filter(k => k !== key).length}. Done RFCs count: ${Array.from(map.keys()).indexOf(key) + 1}`);
         console.log('========================================');
 
     }
@@ -120,6 +117,18 @@ async function runFlutterAnalyzeInModule(moduleName: string): Promise<void> {
             }
         } catch (e: any) {
             console.log(`${logPrefix} Exec error: ${e}`);
+            const match = String(e.message).match(/(\d+)\s+issues?/i);
+            const errorCount = match ? Number(match[1]) : 0;
+            const buildRunnerError = String(e.message).includes('build_runner');
+
+            const moduleWithAllowedErrors = analyzeTestModules.find(m => m.name === moduleName);
+            if (!buildRunnerError && moduleWithAllowedErrors && errorCount <= moduleWithAllowedErrors.allowedAnalyzeErrors) {
+                console.log(`${logPrefix} [${moduleName}] ⚠️ Errori ammessi (${errorCount}/${moduleWithAllowedErrors.allowedAnalyzeErrors}) → skipped`);
+                done = true;
+                continue;
+            }
+
+            Utils.sendNotification(`Flutter analyze in ${moduleName} failed. Check the terminal.`);
             const q = await prompt.get({
                 description: `${logPrefix} Hai corretto i problemi? \n1- Riprova\n2- Salta analyze per questo modulo`
             });
@@ -165,6 +174,7 @@ async function runFlutterTestInModule(moduleName: string): Promise<void> {
             }
         } catch (e: any) {
             console.log(`${logPrefix} Exec error: ${e}`);
+            Utils.sendNotification(`Flutter test in ${moduleName} failed. Check the terminal.`);
             await prompt.get({
                 description: `${logPrefix} Hai corretto i problemi? Premi INVIO per riprovare`
             });
@@ -215,11 +225,11 @@ async function doCommitAndPush(rfc: string, modules: string[]): Promise<void> {
     }
 }
 
-async function updateMaster(modules: string[]): Promise<void> {
+async function updateMaster(): Promise<void> {
     const logPrefix = '[updateMaster] -';
     let currentModule = '';
     try {
-        for (const module of modules) {
+        for (const module of productionModules) {
             currentModule = module;
             process.chdir('../' + module);
 
@@ -232,6 +242,7 @@ async function updateMaster(modules: string[]): Promise<void> {
             console.log(`${logPrefix} module ${module}`);
 
             await git.reset(ResetMode.HARD);
+            await git.clean('f', ['-d']);
             await git.fetch();
             await git.checkout(branchToUpdate);
         }
